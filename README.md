@@ -8,6 +8,8 @@ Over time you unlock new ships and zones, spend Scrap and Core Shards on permane
 
 It is built with plain `HTML`, `CSS`, and `JavaScript` and runs directly in the browser.
 
+<p align="center"><img src="assets/gameplay-screenshot.png" alt="Starfall gameplay screenshot" width="900"></p>
+
 ## Overview
 
 - Genre: `Top-down sci-fi shooter` / `action roguelite`
