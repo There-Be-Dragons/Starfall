@@ -1809,12 +1809,25 @@
 
     if (run.extraction) {
       if (distance(run.player.x, run.player.y, run.extraction.x, run.extraction.y) < run.extraction.radius) {
-        run.extraction.progress += dt;
-        if (run.extraction.progress >= 1.6) {
-          game.completeRun(true, "Extraction complete.");
+        run.extraction.progress = Math.min(run.extraction.holdDuration, run.extraction.progress + dt);
+        if (run.extraction.progress >= run.extraction.holdDuration) {
+          game.completeRun(true, "Extraction complete. Echo archive secured.", { extracted: true, echoEligible: true });
+          return;
         }
       } else {
         run.extraction.progress = Math.max(0, run.extraction.progress - dt * 1.5);
+      }
+      run.extraction.timeRemaining = Math.max(0, run.extraction.timeRemaining - dt);
+      if (!run.extraction.warnedCritical && run.extraction.timeRemaining <= 6) {
+        run.extraction.warnedCritical = true;
+        game.pushNotification("Extraction Window Collapsing", "Beacon departure is imminent. Extract now or lose relic echo access.", "warn");
+      }
+      if (run.extraction.timeRemaining <= 0) {
+        game.completeRun(true, "Contract complete, but the extraction beacon departed before pickup. No relic echo can be archived.", {
+          extracted: false,
+          echoEligible: false
+        });
+        return;
       }
     }
 

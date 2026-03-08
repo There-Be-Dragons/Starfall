@@ -275,9 +275,9 @@
       x: laneX + laneOffset,
       y,
       laneOffset,
-      radius: 24,
-      width: 34,
-      length: 62,
+      radius: 26,
+      width: 38,
+      length: 74,
       hp: vehicleMaxHp,
       maxHp: vehicleMaxHp,
       armor: vehicleArmor,
@@ -286,6 +286,7 @@
       secured: false,
       flash: 0,
       routeProgress: 0,
+      hullVariant: index % 3,
       color: index % 2 === 0 ? "#dfe6ec" : "#cfd9e4",
       accent: index % 2 === 0 ? "#8fe4ff" : "#ffd79f",
       facing: direction > 0 ? Math.PI / 2 : -Math.PI / 2
@@ -332,7 +333,7 @@
       vehicle.hp = 0;
       vehicle.alive = false;
       burstParticles(run, vehicle.x, vehicle.y, vehicle.accent, 26, 22, 170, 2, 5, 0.2, 0.5);
-      game.pushNotification("Convoy Vehicle Lost", "A transport truck has been destroyed.", "warn");
+      game.pushNotification("Freighter Lost", "A convoy freighter has been destroyed.", "warn");
     }
     updateEscortIntegrity(run);
     if (run.objective.type === "escort" && run.objective.lossPercent >= run.objective.allowedLossPercent) {

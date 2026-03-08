@@ -737,13 +737,18 @@
       run.stats.bossKilled = true;
       run.boss = null;
       game.playSfx("bossDown");
+      const extractionWindow = clamp(21 - run.contract.threat, 16, 20);
       run.extraction = {
         x: enemy.x,
         y: enemy.y,
         radius: 88,
-        progress: 0
+        progress: 0,
+        holdDuration: 1.6,
+        timeLimit: extractionWindow,
+        timeRemaining: extractionWindow,
+        warnedCritical: false
       };
-      game.pushNotification("Extraction Beacon Online", "Stand inside the beacon to extract with your haul.", "success");
+      game.pushNotification("Extraction Beacon Online", `Extract within ${Math.ceil(extractionWindow)} seconds to secure your haul and archive a relic echo.`, "success");
     }
   }
 

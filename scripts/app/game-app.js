@@ -62,7 +62,7 @@
     return BOSS_BRIEFING_TEXT[bossId] || "Zone commander with layered pressure and lethal phase spikes.";
   }
 
-  function getMissionTutorialObjectiveText(run) {
+  function getMissionBriefingObjectiveText(run) {
     if (run.objective.type === "salvage") {
       return `Secure ${run.objective.total} unstable wreck caches. Every cache you touch raises the response level and brings the boss closer.`;
     }
@@ -73,19 +73,39 @@
       return "Hold the reactor inside its defense ring. Standing in the cyan ring helps stabilize the lock while support turrets fight beside you.";
     }
     if (run.objective.type === "escort") {
-      return `Protect the armored convoy through the center lane. Reserve vehicles feed in from the wall and total losses must stay under ${run.contract.allowedLossPercent}%.`;
+      return `Protect the armored convoy through the central freight channel. Reserve freighters feed in from the wall and total losses must stay under ${run.contract.allowedLossPercent}%.`;
     }
     return MISSION_TYPES[run.contract.missionType].desc;
   }
 
-  function getMissionTutorialNotes(run) {
+  function getMissionExecutionText(run) {
+    if (run.objective.type === "salvage") {
+      return "Sweep from cache to cache, keep moving between pickups, and expect each core recovery to spike enemy pressure.";
+    }
+    if (run.objective.type === "hunt") {
+      return "Break escort packs, collapse on marked lieutenants fast, and reposition before the next elite group pins you down.";
+    }
+    if (run.objective.type === "defense") {
+      return "Fight from the reactor lane whenever possible so the lock continues building while you intercept incoming threats.";
+    }
+    if (run.objective.type === "escort") {
+      return "Hold the freight channel, delete artillery and chargers first, and trade space for convoy safety instead of hard-committing to every freighter.";
+    }
+    return "Stay mobile, secure drops between engagements, and thin the most dangerous pressure sources first.";
+  }
+
+  function getMissionBriefingNotes(run) {
     const mutatorText = run.contract.mutators.length
       ? run.contract.mutators.map((id) => `${MUTATORS[id].name}: ${MUTATORS[id].desc}`).join(" ")
-      : "No mutators rolled on this contract, so you only have the base mission pressure to manage.";
+      : "No mutators rolled on this contract, so only the base zone and mission pressure are active.";
     const notes = [
       {
-        title: "Objective",
-        text: getMissionTutorialObjectiveText(run)
+        title: "Primary Objective",
+        text: getMissionBriefingObjectiveText(run)
+      },
+      {
+        title: "Execution",
+        text: getMissionExecutionText(run)
       },
       {
         title: "Boss Response",
@@ -96,7 +116,7 @@
         text: mutatorText
       },
       {
-        title: "Controls",
+        title: "Ship Controls",
         text: "`WASD` move, mouse aim, `LMB` fire, `Shift` dash, `Q/E/R/F` abilities, `T` deploy tower, `C` auto-fire, `Esc` pause."
       }
     ];
@@ -107,7 +127,7 @@
     const entries = [
       {
         key: "salvage",
-        name: "Field Salvage",
+        name: "Field Recovery",
         color: "#ffd790",
         desc: "Destroyed hostiles spill Scrap, XP, Core Shards, hull cells, and shield cells into the sector."
       },
@@ -150,13 +170,13 @@
         key: "convoy",
         name: "Convoy Reserves",
         color: "#d7dde6",
-        desc: "Extra transports feed into the wall lane over time, so early losses do not end the contract by themselves."
+        desc: "Extra freighters feed into the wall channel over time, so early losses do not end the contract by themselves."
       });
     }
     return entries;
   }
 
-  function buildTutorialMapMarkup(run) {
+  function buildBriefingMapMarkup(run) {
     const markerMap = new Map();
     const mapWidth = Math.max(1, run.map.width);
     const mapHeight = Math.max(1, run.map.height);
@@ -171,7 +191,7 @@
     };
 
     const addMarker = (x, y, className, label, color) => {
-      scene.push(`<span class="tutorial-map-marker ${className}" style="left:${toLeft(x)}%; top:${toTop(y)}%" title="${label}"></span>`);
+      scene.push(`<span class="briefing-map-marker ${className}" style="left:${toLeft(x)}%; top:${toTop(y)}%" title="${label}"></span>`);
       addLegend(className, label, color);
     };
 
@@ -179,7 +199,7 @@
 
     if (run.objective.type === "salvage") {
       for (const node of run.objective.nodes) {
-        addMarker(node.x, node.y, "objective", "Salvage Cache", run.zone.colors.objective);
+        addMarker(node.x, node.y, "objective", "Wreck Cache", run.zone.colors.objective);
       }
     }
 
@@ -193,7 +213,7 @@
       const reactor = run.objective.reactor;
       scene.push(`
         <span
-          class="tutorial-map-ring"
+          class="briefing-map-ring"
           style="
             left:${toLeft(reactor.x)}%;
             top:${toTop(reactor.y)}%;
@@ -206,8 +226,8 @@
     }
 
     if (run.objective.type === "escort") {
-      scene.push(`<span class="tutorial-map-lane" style="left:${toLeft(run.objective.laneX)}%"></span>`);
-      scene.push(`<span class="tutorial-map-goal" style="top:${toTop(run.objective.destinationY)}%"></span>`);
+      scene.push(`<span class="briefing-map-lane" style="left:${toLeft(run.objective.laneX)}%"></span>`);
+      scene.push(`<span class="briefing-map-goal" style="top:${toTop(run.objective.destinationY)}%"></span>`);
       for (const vehicle of run.objective.convoy) {
         addMarker(
           vehicle.x,
@@ -234,17 +254,17 @@
     }
 
     const legendHtml = [...markerMap.values()].map((entry) => `
-      <span class="tutorial-map-legend-item">
-        <span class="tutorial-map-legend-dot" style="--legend-color:${entry.color}"></span>
+      <span class="briefing-map-legend-item">
+        <span class="briefing-map-legend-dot" style="--legend-color:${entry.color}"></span>
         ${entry.label}
       </span>
     `).join("");
 
     return `
-      <div class="tutorial-map-scene">
+      <div class="briefing-map-scene">
         ${scene.join("")}
       </div>
-      <div class="tutorial-map-legend">${legendHtml}</div>
+      <div class="briefing-map-legend">${legendHtml}</div>
     `;
   }
 
@@ -293,7 +313,7 @@
         hub: el("screen-hub"),
         talents: el("screen-talents"),
         levelup: el("screen-levelup"),
-        tutorial: el("screen-tutorial"),
+        briefing: el("screen-briefing"),
         pause: el("screen-pause"),
         summary: el("screen-summary"),
         options: el("screen-options"),
@@ -822,8 +842,8 @@
         this.closeModal();
         return;
       }
-      if (this.activeModal === "tutorial") {
-        this.dismissMissionTutorial();
+      if (this.activeModal === "briefing") {
+        this.dismissMissionBriefing();
         return;
       }
       if (this.activeModal === "pause") {
@@ -864,8 +884,8 @@
           this.saveOptionsFromInputs();
           this.closeModal();
           break;
-        case "dismiss-tutorial":
-          this.dismissMissionTutorial();
+        case "dismiss-briefing":
+          this.dismissMissionBriefing();
           break;
         case "close-modal":
           this.closeModal();
@@ -909,7 +929,6 @@
       this.ui.optionScreenShake.value = this.save.options.screenShake;
       this.ui.optionParticles.checked = this.save.options.particles;
       this.ui.optionDefaultAutoFire.checked = this.save.options.defaultAutoFire;
-      this.ui.optionShowMissionTutorial.checked = this.save.options.showMissionTutorial !== false;
     },
 
     saveOptionsFromInputs() {
@@ -920,7 +939,6 @@
       this.save.options.screenShake = Number(this.ui.optionScreenShake.value);
       this.save.options.particles = this.ui.optionParticles.checked;
       this.save.options.defaultAutoFire = this.ui.optionDefaultAutoFire.checked;
-      this.save.options.showMissionTutorial = this.ui.optionShowMissionTutorial.checked;
       this.syncAudioMix(true);
       this.saveGame();
       this.playSfx("collect");
@@ -973,7 +991,7 @@
       this.generateContracts();
       this.renderHub();
       this.showHub();
-      this.pushNotification("New Campaign", "Haven Port command is online.", "success");
+      this.pushNotification("New Campaign", "The Port is online.", "success");
       this.saveGame();
     },
 
@@ -1052,7 +1070,7 @@
       `;
       this.ui.menuProgressShowcase.innerHTML = `
         <div class="hero-title">Campaign Status</div>
-        <p>Haven Port is holding with <strong>${this.save.currencies.scrap}</strong> Scrap, <strong>${this.save.currencies.cores}</strong> Core Shards, and <strong>${this.save.profile.bossesKilled}</strong> bosses destroyed.</p>
+        <p>The Port is holding with <strong>${this.save.currencies.scrap}</strong> Scrap, <strong>${this.save.currencies.cores}</strong> Core Shards, and <strong>${this.save.profile.bossesKilled}</strong> bosses destroyed.</p>
         <div class="tag-row">
           <span class="tag warn">Zones ${this.save.unlockedZones.length}/${Object.keys(ZONE_DATA).length}</span>
           <span class="tag">Upgrades ${Object.values(this.save.upgradeLevels).reduce((sum, value) => sum + value, 0)}</span>
@@ -1137,51 +1155,49 @@
       const trainedBranches = branchStates.filter((state) => state.points > 0).length;
       const maxedNodes = branchStates.reduce((sum, state) => sum + state.maxedNodes, 0);
       const focusBranch = branchStates.reduce((best, state) => (state.points > best.points ? state : best), branchStates[0]);
-      const totalFill = (totalRanks / Math.max(1, maxRanks)) * 100;
+      const focusText = trainedBranches > 0
+        ? `${focusBranch.points}/${focusBranch.maxPoints} ranks currently sit in ${focusBranch.branch.name}, making it your strongest long-term lane.`
+        : "No permanent talent ranks are trained yet. Open the full tree to start shaping your build.";
 
       this.ui.upgradeList.innerHTML = `
         <div class="spec-overview">
-          <div class="spec-hero-card">
-            <div class="spec-total-ring" style="--fill:${totalFill}%">
-              <strong>${totalRanks}</strong>
-              <span>/ ${maxRanks}</span>
-            </div>
-            <div class="spec-hero-copy">
+          <div class="spec-sidebar-summary">
+            <div>
               <div class="hero-title">Current Spec</div>
-              <strong>${trainedBranches > 0 ? `${focusBranch.branch.name} Focus` : "Unspent Potential"}</strong>
-              <div class="archive-note">
-                ${trainedBranches > 0
-                  ? `${focusBranch.points}/${focusBranch.maxPoints} ranks sit in ${focusBranch.branch.name}. Open the full tree to train more nodes side by side.`
-                  : "No permanent talent ranks trained yet. Open the full tree to start shaping your long-term build."}
-              </div>
-              <div class="tag-row">
-                <span class="tag">Branches ${trainedBranches}/${UPGRADE_BRANCHES.length}</span>
-                <span class="tag success">Maxed Nodes ${maxedNodes}/${PERMANENT_UPGRADES.length}</span>
-              </div>
+              <strong class="spec-sidebar-focus">${trainedBranches > 0 ? `${focusBranch.branch.name} Focus` : "Unspent Potential"}</strong>
             </div>
-            <button data-action="open-talents">Open Talent Tree</button>
+            <div class="spec-sidebar-total">
+              <strong>${totalRanks}<span>/ ${maxRanks}</span></strong>
+              <div class="archive-note">${focusText}</div>
+            </div>
+            <div class="tag-row spec-sidebar-tags">
+              <span class="tag">Branches ${trainedBranches}/${UPGRADE_BRANCHES.length}</span>
+              <span class="tag success">Maxed ${maxedNodes}/${PERMANENT_UPGRADES.length}</span>
+            </div>
           </div>
-          <div class="spec-branch-grid">
+          <div class="spec-rail-list">
             ${branchStates.map((state) => `
-              <div class="spec-branch-card" style="--branch-color:${state.branch.color}">
-                <div class="spec-branch-head">
-                  <strong>${state.branch.name}</strong>
-                  <span class="tag">${state.points}/${state.maxPoints}</span>
+              <div class="spec-rail-card" style="--branch-color:${state.branch.color}">
+                <div class="spec-rail-meter">
+                  <div class="spec-rail-shell">
+                    <div class="spec-rail-fill" style="height:${state.points > 0 ? Math.max(10, state.completion * 100) : 0}%"></div>
+                  </div>
+                  <span class="spec-rail-percent">${Math.round(state.completion * 100)}%</span>
                 </div>
-                <div class="spec-bar-shell">
-                  <div class="spec-bar-fill" style="width:${state.completion * 100}%"></div>
-                </div>
-                <div class="archive-note">${state.branch.desc}</div>
-                <div class="spec-node-stack">
-                  ${state.nodes.map((node) => `
-                    <div class="spec-node-line ${node.level > 0 ? "active" : ""}">
-                      <span>${node.upgrade.name}</span>
-                      <div class="spec-node-bar">
-                        <div class="spec-node-bar-fill" style="width:${node.fillPercent}%"></div>
+                <div class="spec-rail-body">
+                  <div class="spec-rail-head">
+                    <strong>${state.branch.name}</strong>
+                    <span class="tag">${state.points}/${state.maxPoints}</span>
+                  </div>
+                  <div class="archive-note">${state.branch.desc}</div>
+                  <div class="spec-node-pill-stack">
+                    ${state.nodes.map((node) => `
+                      <div class="spec-node-pill ${node.level > 0 ? "active" : ""} ${node.atMax ? "maxed" : ""}">
+                        <span>${node.upgrade.name}</span>
+                        <strong>${node.level}/${node.upgrade.maxLevel}</strong>
                       </div>
-                      <strong>${node.level}/${node.upgrade.maxLevel}</strong>
-                    </div>
-                  `).join("")}
+                    `).join("")}
+                  </div>
                 </div>
               </div>
             `).join("")}
@@ -1237,6 +1253,99 @@
           `).join("")}
         </div>
       `;
+    },
+
+    renderMissionBriefing() {
+      if (!this.run) {
+        return;
+      }
+      const run = this.run;
+      const contract = run.contract;
+      const boss = BOSS_DATA[run.zone.bossId];
+      const mutatorTags = contract.mutators.length
+        ? contract.mutators.map((id) => `<span class="tag">${MUTATORS[id].name}</span>`).join("")
+        : `<span class="tag success">Clean Contract</span>`;
+      const contractDetail = contract.missionType === "escort"
+        ? `Loss cap ${contract.allowedLossPercent}% • ${run.objective.convoy.length} convoy units in rotation`
+        : `Projected reward ${contract.rewardScrap} Scrap • ${contract.rewardCores} Cores`;
+      this.ui.briefingTitle.textContent = `${MISSION_TYPES[contract.missionType].name} Briefing`;
+      this.ui.briefingLead.textContent = `Mission is paused for pre-deployment briefing. Review the contract, local threat picture, battlefield layout, and field rules before insertion into ${run.zone.name}.`;
+      this.ui.briefingOverview.innerHTML = `
+        <div class="summary-card briefing-summary-card">
+          <span>Operation</span>
+          <strong>${MISSION_TYPES[contract.missionType].name}</strong>
+          <div class="archive-note">${getMissionBriefingObjectiveText(run)}</div>
+        </div>
+        <div class="summary-card briefing-summary-card">
+          <span>Threat</span>
+          <strong>${romanThreat(contract.threat)}</strong>
+          <div class="archive-note">${contractDetail}</div>
+        </div>
+        <div class="summary-card briefing-summary-card">
+          <span>Command Target</span>
+          <strong>${boss.name}</strong>
+          <div class="archive-note">${getBossBriefingDescription(run.zone.bossId)}</div>
+        </div>
+        <div class="summary-card briefing-summary-card">
+          <span>Mutators</span>
+          <strong>${contract.mutators.length ? contract.mutators.length : "None"}</strong>
+          <div class="tag-row briefing-mutator-row">${mutatorTags}</div>
+        </div>
+      `;
+      this.ui.briefingMapPreview.innerHTML = buildBriefingMapMarkup(run);
+      this.ui.briefingGroundIntel.innerHTML = getGroundIntelEntries(run).map((entry) => `
+        <div class="briefing-intel-card" style="--intel-color:${entry.color}">
+          <strong>${entry.name}</strong>
+          <p>${entry.desc}</p>
+        </div>
+      `).join("");
+      const rosterIds = run.zone.enemyWeights
+        .slice()
+        .sort((left, right) => right.weight - left.weight)
+        .map((entry) => entry.id);
+      const bossCard = `
+        <div class="briefing-enemy-card boss">
+          <img class="briefing-enemy-portrait" src="${getBriefingPortraitPath(run.zone.bossId)}" alt="${boss.name} portrait">
+          <div class="briefing-enemy-copy">
+            <div class="selection-footer">
+              <strong>${boss.name}</strong>
+              <span class="tag warn">Boss</span>
+            </div>
+            <p>${getBossBriefingDescription(run.zone.bossId)}</p>
+          </div>
+        </div>
+      `;
+      const enemyCards = rosterIds.map((enemyId) => `
+        <div class="briefing-enemy-card">
+          <img class="briefing-enemy-portrait" src="${getBriefingPortraitPath(enemyId)}" alt="${ENEMY_DATA[enemyId].name} portrait">
+          <div class="briefing-enemy-copy">
+            <div class="selection-footer">
+              <strong>${ENEMY_DATA[enemyId].name}</strong>
+              <span class="tag">${ENEMY_BEHAVIOR_LABELS[ENEMY_DATA[enemyId].behavior] || "Hostile"}</span>
+            </div>
+            <p>${getEnemyBriefingDescription(enemyId)}</p>
+          </div>
+        </div>
+      `).join("");
+      this.ui.briefingEnemyRoster.innerHTML = `${bossCard}${enemyCards}`;
+      this.ui.briefingMissionNotes.innerHTML = getMissionBriefingNotes(run).map((note) => `
+        <div class="briefing-note-card">
+          <strong>${note.title}</strong>
+          <p>${note.text}</p>
+        </div>
+      `).join("");
+    },
+
+    dismissMissionBriefing() {
+      if (this.activeModal !== "briefing") {
+        return;
+      }
+      this.activeModal = null;
+      this.modalReturnTo = null;
+      this.refreshScreens();
+      if (this.run) {
+        this.pushNotification("Mission Live", `${MISSION_TYPES[this.run.contract.missionType].name} deployment is active.`, "success");
+      }
     },
 
     renderArchive() {
@@ -1450,12 +1559,9 @@
       applyArchivedRelicsToRun(this.save, this.run);
       this.renderRelicStrip();
       this.updateHud();
-      const deployText = contract.missionType === "defense"
-        ? `${MISSION_TYPES[contract.missionType].name} in ${ZONE_DATA[contract.zoneId].name}. Protect the drill reactor from inside its defense ring.`
-        : contract.missionType === "escort"
-          ? `${MISSION_TYPES[contract.missionType].name} in ${ZONE_DATA[contract.zoneId].name}. Keep convoy losses below ${contract.allowedLossPercent}% while it crosses the center lane.`
-        : `${MISSION_TYPES[contract.missionType].name} in ${ZONE_DATA[contract.zoneId].name}.`;
-      this.pushNotification("Contract Deployed", deployText, "success");
+      this.run.modeIntroTimer = 0;
+      this.renderMissionBriefing();
+      this.openModal("briefing");
       this.saveGame();
     },
 
@@ -1517,7 +1623,11 @@
         return "-";
       }
       if (this.run.extraction) {
-        return "Reach extraction";
+        const extraction = this.run.extraction;
+        const boarding = extraction.progress > 0.05
+          ? ` • ${Math.round((extraction.progress / extraction.holdDuration) * 100)}%`
+          : "";
+        return `Extract ${formatTime(extraction.timeRemaining)}${boarding}`;
       }
       if (this.run.boss) {
         return `Eliminate ${this.run.boss.name}`;
@@ -1534,14 +1644,14 @@
         if (this.run.objective.complete) {
           return "Reactor secured. Eliminate the boss.";
         }
-        return `Defend Reactor • Hull ${Math.round(reactor.hp)}/${Math.round(reactor.maxHp)} • Shield ${Math.round(reactor.shield)}/${Math.round(reactor.maxShield)}`;
+        return `Reactor ${Math.round(reactor.hp)} Hull • ${Math.round(reactor.shield)} Shield`;
       }
       if (this.run.objective.type === "escort") {
         const objective = this.run.objective;
         if (objective.complete) {
           return "Convoy secured. Eliminate the boss.";
         }
-        return `Escort Convoy • Loss ${Math.round(objective.lossPercent)}/${objective.allowedLossPercent}% • Units ${objective.survivors}/${objective.convoy.length}`;
+        return `Convoy ${Math.round(objective.lossPercent)}% Loss • ${objective.survivors}/${objective.convoy.length} Units`;
       }
       return "-";
     },
@@ -1593,6 +1703,16 @@
         `;
         return;
       }
+      if (!this.run.echoEligible) {
+        this.ui.summaryArchiveTitle.textContent = "Echo Archive Unavailable";
+        this.ui.summaryArchiveChoices.innerHTML = `
+          <div class="archive-card">
+            <strong><span>No Relic Echo Secured</span><span class="tag warn">Missed Extraction</span></strong>
+            <div class="archive-note">The contract was completed, but the extraction window expired before pickup. Only live extraction secures an Echo archive choice.</div>
+          </div>
+        `;
+        return;
+      }
       const candidates = this.run.archiveCandidates || [];
       if (!candidates.length) {
         this.ui.summaryArchiveTitle.textContent = "Echo Archive Idle";
@@ -1628,7 +1748,7 @@
     },
 
     archiveRelicChoice(relicId) {
-      if (!this.run || !this.run.summaryVictory || this.run.archivedRelicSelected) {
+      if (!this.run || !this.run.echoEligible || this.run.archivedRelicSelected) {
         return;
       }
       const result = addRelicToArchive(this.save, relicId);
@@ -1645,11 +1765,13 @@
       }
     },
 
-    completeRun(victory, reason) {
+    completeRun(victory, reason, options = {}) {
       if (!this.run || this.run.flags.finalized) {
         return;
       }
       this.run.flags.finalized = true;
+      const extracted = options.extracted ?? victory;
+      const echoEligible = options.echoEligible ?? (victory && extracted);
       const contract = this.run.contract;
       const rewards = {
         scrap: Math.round((victory ? contract.rewardScrap : contract.rewardScrap * 0.25) + (victory ? this.run.rewards.scrap : this.run.rewards.scrap * 0.45)),
@@ -1689,7 +1811,9 @@
 
       const unlocked = this.checkAchievements();
       this.run.summaryVictory = victory;
-      this.run.archiveCandidates = victory ? getArchiveCandidates(this.run) : [];
+      this.run.summaryExtracted = extracted;
+      this.run.echoEligible = echoEligible;
+      this.run.archiveCandidates = echoEligible ? getArchiveCandidates(this.run) : [];
       this.run.archivedRelicSelected = null;
 
       this.ui.summaryTitle.textContent = victory ? "Contract Complete" : "Contract Failed";
@@ -1703,6 +1827,7 @@
         <div class="summary-card"><span>Scrap Found</span><strong>${this.run.rewards.scrap}</strong></div>
         <div class="summary-card"><span>Pickups</span><strong>${this.run.stats.pickupsCollected}</strong></div>
         <div class="summary-card"><span>Supply Pods</span><strong>${this.run.stats.supplyPodsOpened}</strong></div>
+        <div class="summary-card"><span>Extraction</span><strong>${victory ? (extracted ? "Secured" : "Missed") : "Failed"}</strong></div>
       `;
       this.ui.summaryRewards.innerHTML = [
         `<div class="reward-pill">+${rewards.scrap} Scrap</div>`,

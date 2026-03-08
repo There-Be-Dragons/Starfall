@@ -1,4 +1,4 @@
-// Shared data tables and configuration for Starfall Salvage.
+// Shared data tables and configuration for Starfall.
   "use strict";
 
   const STORAGE_KEY = "starfall-salvage-save-v1";
@@ -9,7 +9,7 @@
   const MISSION_TYPES = {
     salvage: {
       id: "salvage",
-      name: "Salvage Sweep",
+      name: "Wreck Sweep",
       desc: "Recover unstable wreck cores across the sector before hostile forces can secure them."
     },
     hunt: {
@@ -25,7 +25,7 @@
     escort: {
       id: "escort",
       name: "Convoy Escort",
-      desc: "Escort the armored convoy up the center corridor and keep losses below the contract cap."
+      desc: "Escort the armored convoy through the central freight channel and keep losses below the contract cap."
     }
   };
 
@@ -529,7 +529,7 @@
     },
     {
       id: "salvageRigs",
-      name: "Salvage Rigs",
+      name: "Recovery Rigs",
       desc: "Increase Scrap gained during missions by 8% per rank.",
       maxLevel: 5,
       costs: [
@@ -698,7 +698,7 @@
     },
     {
       id: "salvageMagnet",
-      name: "Salvage Magnet",
+      name: "Recovery Magnet",
       rarity: "common",
       desc: "+22 pickup radius and +12% Scrap gained in this run.",
       maxStacks: 4,
@@ -934,7 +934,7 @@
 
   const ACHIEVEMENTS = [
     { id: "firstContract", name: "Boots On Deck", desc: "Complete your first contract.", reward: { scrap: 100, cores: 4 } },
-    { id: "salvageVeteran", name: "Salvage Veteran", desc: "Complete 15 contracts.", reward: { scrap: 260, cores: 10 } },
+    { id: "salvageVeteran", name: "Contract Veteran", desc: "Complete 15 contracts.", reward: { scrap: 260, cores: 10 } },
     { id: "scrapBaron", name: "Scrap Baron", desc: "Earn 5000 Scrap across all campaigns.", reward: { scrap: 400, cores: 14 } },
     { id: "bossHunter", name: "Boss Hunter", desc: "Defeat 20 bosses.", reward: { scrap: 420, cores: 16 } },
     { id: "threatBreaker", name: "Threat Breaker", desc: "Clear a Threat V contract.", reward: { scrap: 300, cores: 12 } },
@@ -1016,7 +1016,7 @@
       name: "Cache Pod",
       color: "#8cc7ff",
       accent: "#d8f1ff",
-      desc: "Cracks open into salvage, cores, and signal shards."
+      desc: "Cracks open into Scrap, cores, and signal shards."
     },
     repair: {
       id: "repair",
@@ -1037,7 +1037,7 @@
       name: "Magnet Pod",
       color: "#9ce6ff",
       accent: "#e4fbff",
-      desc: "Amplifies your salvage vacuum field and reels in loose drops."
+      desc: "Amplifies your pickup vacuum field and reels in loose drops."
     }
   };
 
@@ -1294,7 +1294,7 @@
       id: "systems",
       name: "Command Mesh",
       color: "#d6a4ff",
-      desc: "Accelerate abilities, salvage, and signal growth.",
+      desc: "Accelerate abilities, recovery, and signal growth.",
       upgrades: ["archiveDecoder", "salvageRigs", "abilityMatrix", "killTelemetry"]
     }
   ];
@@ -1356,21 +1356,20 @@
     "summaryRewards",
     "summaryArchiveTitle",
     "summaryArchiveChoices",
-    "tutorialTitle",
-    "tutorialLead",
-    "tutorialOverview",
-    "tutorialMapPreview",
-    "tutorialEnemyRoster",
-    "tutorialGroundIntel",
-    "tutorialMissionNotes",
+    "briefingTitle",
+    "briefingLead",
+    "briefingOverview",
+    "briefingMapPreview",
+    "briefingEnemyRoster",
+    "briefingGroundIntel",
+    "briefingMissionNotes",
     "optionMuteAudio",
     "optionMasterVolume",
     "optionSfxVolume",
     "optionMusicVolume",
     "optionScreenShake",
     "optionParticles",
-    "optionDefaultAutoFire",
-    "optionShowMissionTutorial"
+    "optionDefaultAutoFire"
   ];
 
   const UPGRADE_MAP = Object.fromEntries(PERMANENT_UPGRADES.map((upgrade) => [upgrade.id, upgrade]));

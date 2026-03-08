@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Starfall Salvage</title>
+  <title>Starfall</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div id="app">
-    <canvas id="gameCanvas" aria-label="Starfall Salvage game canvas"></canvas>
+    <canvas id="gameCanvas" aria-label="Starfall game canvas"></canvas>
     <div id="hud" class="hud hidden">
       <div class="hud-row hud-top-row">
         <div class="status-card wide hud-vitals-card">
@@ -102,9 +102,9 @@
 
     <section id="screen-menu" class="screen active">
       <div class="panel hero-panel">
-        <img class="logo" src="assets/logo.svg" alt="Starfall Salvage logo">
+        <img class="logo" src="assets/logo.svg" alt="Starfall logo">
         <p class="lead">
-          Salvage the wreckage of fallen star fleets, crush war machines, and rebuild Haven Port one contract at a time.
+          Recover the wreckage of fallen star fleets, crush war machines, and rebuild The Port one contract at a time.
         </p>
         <div id="menuStatusRow" class="menu-status-row"></div>
         <div class="menu-showcase">
@@ -146,7 +146,7 @@
       <div class="panel hub-panel">
         <div class="panel-header">
           <div>
-            <h1>Haven Port Command</h1>
+            <h1>The Port</h1>
             <p id="profileSummary">Build your roster, purchase upgrades, and deploy for the next contract.</p>
           </div>
           <div class="resource-strip">
@@ -218,7 +218,7 @@
         </div>
         <div id="talentTreeView" class="talent-tree-view"></div>
         <div class="button-row align-end">
-          <button data-action="return-hub">Back To Haven Port</button>
+          <button data-action="return-hub">Return To The Port</button>
         </div>
       </div>
     </section>
@@ -231,43 +231,43 @@
       </div>
     </section>
 
-    <section id="screen-tutorial" class="screen modal-screen">
-      <div class="panel modal-panel tutorial-panel">
-        <div class="panel-header tutorial-header">
+    <section id="screen-briefing" class="screen modal-screen">
+      <div class="panel modal-panel briefing-panel">
+        <div class="panel-header briefing-header">
           <div>
-            <h2 id="tutorialTitle">Contract Briefing</h2>
-            <p id="tutorialLead" class="lead compact"></p>
+            <h2 id="briefingTitle">Mission Briefing</h2>
+            <p id="briefingLead" class="lead compact"></p>
           </div>
           <div class="tag-row">
-            <span class="tag success">Tutorial Pause</span>
-            <span class="tag">Close To Deploy</span>
+            <span class="tag success">Mission Briefing</span>
+            <span class="tag">Intel Review</span>
           </div>
         </div>
-        <div class="tutorial-layout">
-          <div class="tutorial-column primary">
-            <div id="tutorialOverview" class="summary-grid tutorial-overview"></div>
-            <div class="help-card tutorial-map-card">
-              <h3>Field Layout</h3>
-              <div id="tutorialMapPreview" class="tutorial-map-preview"></div>
+        <div class="briefing-layout">
+          <div class="briefing-column primary">
+            <div id="briefingOverview" class="summary-grid briefing-overview"></div>
+            <div class="help-card briefing-map-card">
+              <h3>Battlefield Layout</h3>
+              <div id="briefingMapPreview" class="briefing-map-preview"></div>
             </div>
             <div class="help-card">
-              <h3>Ground Intel</h3>
-              <div id="tutorialGroundIntel" class="tutorial-ground-grid"></div>
+              <h3>Field Assets And Hazards</h3>
+              <div id="briefingGroundIntel" class="briefing-ground-grid"></div>
             </div>
           </div>
-          <div class="tutorial-column secondary">
+          <div class="briefing-column secondary">
             <div class="help-card">
-              <h3>Threat Roster</h3>
-              <div id="tutorialEnemyRoster" class="tutorial-roster"></div>
+              <h3>Threat Dossier</h3>
+              <div id="briefingEnemyRoster" class="briefing-roster"></div>
             </div>
             <div class="help-card">
-              <h3>Mission Notes</h3>
-              <div id="tutorialMissionNotes" class="tutorial-notes"></div>
+              <h3>How To Play This Contract</h3>
+              <div id="briefingMissionNotes" class="briefing-notes"></div>
             </div>
           </div>
         </div>
         <div class="button-row align-end">
-          <button class="primary" data-action="dismiss-tutorial">Start Contract</button>
+          <button class="primary" data-action="dismiss-briefing">Deploy</button>
         </div>
       </div>
     </section>
@@ -295,7 +295,7 @@
           <div id="summaryArchiveChoices" class="choice-grid"></div>
         </div>
         <div class="button-row">
-          <button class="primary" data-action="return-hub">Back To Haven Port</button>
+          <button class="primary" data-action="return-hub">Return To The Port</button>
           <button data-action="start-same-class">Run It Back</button>
         </div>
       </div>
@@ -333,10 +333,6 @@
             <input id="optionDefaultAutoFire" type="checkbox">
             <span>Enable Auto-Fire On New Runs</span>
           </label>
-          <label class="toggle-row">
-            <input id="optionShowMissionTutorial" type="checkbox">
-            <span>Show Mission Tutorial Briefing At Contract Start</span>
-          </label>
         </div>
         <div class="button-row">
           <button class="primary" data-action="save-options">Save</button>
@@ -351,7 +347,7 @@
         <div class="help-grid">
           <div class="help-card">
             <h3>Mission Flow</h3>
-            <p>Choose a contract in Haven Port, clear the mission objective, defeat the zone boss, and extract for rewards.</p>
+            <p>Choose a contract in The Port, clear the mission objective, defeat the zone boss, then race the extraction window. Missing extraction still completes the contract, but only a successful extraction lets you archive a relic echo.</p>
           </div>
           <div class="help-card">
             <h3>Loot Vacuum</h3>

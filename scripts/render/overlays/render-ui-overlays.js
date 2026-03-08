@@ -52,6 +52,33 @@
     }
   }
 
+  function getWrappedOverlayLines(ctx, text, maxWidth) {
+    const words = String(text).split(" ");
+    const lines = [];
+    let currentLine = "";
+    for (const word of words) {
+      const candidate = currentLine ? `${currentLine} ${word}` : word;
+      if (currentLine && ctx.measureText(candidate).width > maxWidth) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = candidate;
+      }
+    }
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+    return lines.length ? lines : [String(text)];
+  }
+
+  function drawWrappedOverlayText(ctx, text, x, y, maxWidth, lineHeight) {
+    const lines = getWrappedOverlayLines(ctx, text, maxWidth);
+    for (let index = 0; index < lines.length; index += 1) {
+      ctx.fillText(lines[index], x, y + index * lineHeight);
+    }
+    return lines.length;
+  }
+
   function renderDefenseOverlay(run) {
     if (run.objective.type !== "defense") {
       return;
@@ -61,11 +88,18 @@
     const width = Math.min(340, game.width - 420);
     const x = (game.width - width) / 2;
     const y = run.boss ? 52 : 18;
+    const subtitle = run.objective.complete
+      ? "Signal lock complete. Finish the boss."
+      : "Stand inside the cyan defense ring to reinforce shields.";
+    ctx.font = "600 11px Segoe UI";
+    const subtitleLines = getWrappedOverlayLines(ctx, subtitle, width - 24);
+    const barsY = y + 38 + (subtitleLines.length - 1) * 12;
+    const panelHeight = barsY - y + 26;
     ctx.fillStyle = "rgba(7, 13, 25, 0.86)";
-    ctx.fillRect(x, y, width, 64);
+    ctx.fillRect(x, y, width, panelHeight);
     ctx.strokeStyle = reactor.alive ? "#9ff3ff" : "#ff8d8d";
     ctx.lineWidth = 2;
-    ctx.strokeRect(x, y, width, 64);
+    ctx.strokeRect(x, y, width, panelHeight);
     ctx.fillStyle = "#f2fbff";
     ctx.font = "700 13px Segoe UI";
     ctx.textAlign = "left";
@@ -73,27 +107,24 @@
     ctx.fillText(title, x + 12, y + 16);
     ctx.font = "600 11px Segoe UI";
     ctx.fillStyle = "#8ba5c9";
-    const subtitle = run.objective.complete
-      ? "Signal lock complete. Finish the boss."
-      : "Stand inside the cyan defense ring to reinforce shields.";
-    ctx.fillText(subtitle, x + 12, y + 30);
+    drawWrappedOverlayText(ctx, subtitle, x + 12, y + 30, width - 24, 12);
 
     ctx.fillStyle = "rgba(255,255,255,0.08)";
-    ctx.fillRect(x + 12, y + 38, width - 24, 8);
+    ctx.fillRect(x + 12, barsY, width - 24, 8);
     ctx.fillStyle = "#ff8e7b";
-    ctx.fillRect(x + 12, y + 38, (width - 24) * (reactor.hp / reactor.maxHp), 8);
+    ctx.fillRect(x + 12, barsY, (width - 24) * (reactor.hp / reactor.maxHp), 8);
     if (reactor.maxShield > 0) {
       ctx.fillStyle = "rgba(255,255,255,0.08)";
-      ctx.fillRect(x + 12, y + 50, width - 24, 8);
+      ctx.fillRect(x + 12, barsY + 12, width - 24, 8);
       ctx.fillStyle = "#83eaff";
-      ctx.fillRect(x + 12, y + 50, (width - 24) * (reactor.shield / reactor.maxShield), 8);
+      ctx.fillRect(x + 12, barsY + 12, (width - 24) * (reactor.shield / reactor.maxShield), 8);
     }
 
     ctx.fillStyle = "#ffcfbf";
-    ctx.fillText(`Hull ${Math.round(reactor.hp)} / ${Math.round(reactor.maxHp)}`, x + 14, y + 61);
+    ctx.fillText(`Hull ${Math.round(reactor.hp)} / ${Math.round(reactor.maxHp)}`, x + 14, barsY + 23);
     ctx.textAlign = "right";
     ctx.fillStyle = "#bff7ff";
-    ctx.fillText(run.objective.complete ? "Stable" : `Lock ${Math.round((run.objective.progress / run.objective.totalProgress) * 100)}%`, x + width - 14, y + 61);
+    ctx.fillText(run.objective.complete ? "Stable" : `Lock ${Math.round((run.objective.progress / run.objective.totalProgress) * 100)}%`, x + width - 14, barsY + 23);
   }
 
   function renderEscortOverlay(run) {
@@ -105,37 +136,41 @@
     const width = Math.min(368, game.width - 420);
     const x = (game.width - width) / 2;
     const y = run.boss ? 52 : 18;
+    const subtitle = objective.complete
+      ? "Escort complete. Boss response detected."
+      : `Loss cap ${objective.allowedLossPercent}% • ${objective.survivors}/${objective.convoy.length} convoy units remaining.`;
+    ctx.font = "600 11px Segoe UI";
+    const subtitleLines = getWrappedOverlayLines(ctx, subtitle, width - 24);
+    const barsY = y + 38 + (subtitleLines.length - 1) * 12;
+    const panelHeight = barsY - y + 36;
     ctx.fillStyle = "rgba(7, 13, 25, 0.86)";
-    ctx.fillRect(x, y, width, 74);
+    ctx.fillRect(x, y, width, panelHeight);
     ctx.strokeStyle = objective.complete ? "#a6f7c6" : "#d7dde6";
     ctx.lineWidth = 2;
-    ctx.strokeRect(x, y, width, 74);
+    ctx.strokeRect(x, y, width, panelHeight);
     ctx.fillStyle = "#f2fbff";
     ctx.font = "700 13px Segoe UI";
     ctx.textAlign = "left";
     ctx.fillText(objective.complete ? "CONVOY SECURED" : "ARMORED CONVOY", x + 12, y + 16);
     ctx.font = "600 11px Segoe UI";
     ctx.fillStyle = "#8ba5c9";
-    const subtitle = objective.complete
-      ? "Escort complete. Boss response detected."
-      : `Loss cap ${objective.allowedLossPercent}% • ${objective.survivors}/${objective.convoy.length} convoy units remaining.`;
-    ctx.fillText(subtitle, x + 12, y + 30);
+    drawWrappedOverlayText(ctx, subtitle, x + 12, y + 30, width - 24, 12);
 
     ctx.fillStyle = "rgba(255,255,255,0.08)";
-    ctx.fillRect(x + 12, y + 38, width - 24, 8);
+    ctx.fillRect(x + 12, barsY, width - 24, 8);
     ctx.fillStyle = "#ffcc96";
-    ctx.fillRect(x + 12, y + 38, (width - 24) * (objective.currentIntegrity / objective.maxIntegrity), 8);
+    ctx.fillRect(x + 12, barsY, (width - 24) * (objective.currentIntegrity / objective.maxIntegrity), 8);
 
     ctx.fillStyle = "rgba(255,255,255,0.08)";
-    ctx.fillRect(x + 12, y + 50, width - 24, 8);
+    ctx.fillRect(x + 12, barsY + 12, width - 24, 8);
     ctx.fillStyle = "#91eaff";
-    ctx.fillRect(x + 12, y + 50, (width - 24) * objective.progress, 8);
+    ctx.fillRect(x + 12, barsY + 12, (width - 24) * objective.progress, 8);
 
     ctx.fillStyle = "#ffd8b0";
-    ctx.fillText(`Integrity ${Math.round(objective.currentIntegrity)} / ${Math.round(objective.maxIntegrity)}`, x + 14, y + 70);
+    ctx.fillText(`Integrity ${Math.round(objective.currentIntegrity)} / ${Math.round(objective.maxIntegrity)}`, x + 14, barsY + 32);
     ctx.textAlign = "right";
     ctx.fillStyle = "#bff7ff";
-    ctx.fillText(`Loss ${Math.round(objective.lossPercent)} / ${objective.allowedLossPercent}%`, x + width - 14, y + 70);
+    ctx.fillText(`Loss ${Math.round(objective.lossPercent)} / ${objective.allowedLossPercent}%`, x + width - 14, barsY + 32);
   }
 
   function renderModeIntroOverlay(run) {
@@ -148,27 +183,136 @@
     const width = Math.min(520, game.width - 120);
     const x = (game.width - width) / 2;
     const y = game.height * 0.12;
+    const subtitle = run.contract.missionType === "defense"
+      ? "Protect the reactor core, use the support ring, then eliminate the boss."
+      : run.contract.missionType === "escort"
+        ? `Escort the convoy through the central freight channel and keep losses below ${run.contract.allowedLossPercent}%.`
+        : mission.desc;
+    ctx.font = "600 12px Segoe UI";
+    const panelHeight = 84 + (getWrappedOverlayLines(ctx, subtitle, width - 60).length - 1) * 14;
     ctx.globalAlpha = alpha;
     ctx.fillStyle = "rgba(7, 12, 24, 0.88)";
-    ctx.fillRect(x, y, width, 86);
+    ctx.fillRect(x, y, width, panelHeight);
     ctx.strokeStyle = run.zone.colors.accent;
     ctx.lineWidth = 2;
-    ctx.strokeRect(x, y, width, 86);
+    ctx.strokeRect(x, y, width, panelHeight);
     ctx.textAlign = "center";
     ctx.fillStyle = "#dff6ff";
     ctx.font = "700 22px Segoe UI";
     ctx.fillText(mission.name, game.width / 2, y + 28);
     ctx.font = "600 12px Segoe UI";
     ctx.fillStyle = "#9cb7dd";
-    const subtitle = run.contract.missionType === "defense"
-      ? "Protect the reactor core, use the support ring, then eliminate the boss."
-      : run.contract.missionType === "escort"
-        ? `Escort the convoy through the center lane and keep losses below ${run.contract.allowedLossPercent}%.`
-      : mission.desc;
-    ctx.fillText(subtitle, game.width / 2, y + 52);
+    drawWrappedOverlayText(ctx, subtitle, game.width / 2, y + 52, width - 60, 14);
     ctx.fillStyle = run.zone.colors.accent;
-    ctx.fillText(`Zone: ${run.zone.name}  •  Threat ${romanThreat(run.contract.threat)}`, game.width / 2, y + 72);
+    ctx.fillText(`Zone: ${run.zone.name}  •  Threat ${romanThreat(run.contract.threat)}`, game.width / 2, y + panelHeight - 14);
     ctx.globalAlpha = 1;
+  }
+
+  function renderExtractionGuidance(run) {
+    if (!run.extraction) {
+      return;
+    }
+    const ctx = game.ctx;
+    const renderCameraX = run.camera.renderX ?? run.camera.x;
+    const renderCameraY = run.camera.renderY ?? run.camera.y;
+    const playerScreenX = game.width / 2 + (run.player.x - renderCameraX);
+    const playerScreenY = game.height / 2 + (run.player.y - renderCameraY);
+    const extractionScreenX = game.width / 2 + (run.extraction.x - renderCameraX);
+    const extractionScreenY = game.height / 2 + (run.extraction.y - renderCameraY);
+    const padding = 48;
+    const markerX = clamp(extractionScreenX, padding, game.width - padding);
+    const markerY = clamp(extractionScreenY, padding, game.height - padding);
+    const offscreen = extractionScreenX < padding || extractionScreenX > game.width - padding || extractionScreenY < padding || extractionScreenY > game.height - padding;
+    const urgency = clamp(1 - run.extraction.timeRemaining / Math.max(0.001, run.extraction.timeLimit), 0, 1);
+    const color = run.extraction.timeRemaining <= 5 ? "#ffd08b" : "#98fff5";
+
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = 0.34 + urgency * 0.24;
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([12, 8]);
+    ctx.beginPath();
+    ctx.moveTo(playerScreenX, playerScreenY);
+    ctx.lineTo(markerX, markerY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+    ctx.translate(markerX, markerY);
+    if (offscreen) {
+      ctx.rotate(Math.atan2(extractionScreenY - playerScreenY, extractionScreenX - playerScreenX));
+    }
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, -13);
+    ctx.lineTo(13, 0);
+    ctx.lineTo(0, 13);
+    ctx.lineTo(-13, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "#08111f";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.font = "700 12px Segoe UI";
+    ctx.textAlign = "center";
+    ctx.fillText("EXTRACT", markerX, markerY - 18);
+    ctx.font = "600 11px Segoe UI";
+    ctx.fillStyle = "#dffbff";
+    ctx.fillText(formatTime(run.extraction.timeRemaining), markerX, markerY + 28);
+    ctx.restore();
+  }
+
+  function renderExtractionOverlay(run) {
+    if (!run.extraction) {
+      return;
+    }
+    const ctx = game.ctx;
+    const extraction = run.extraction;
+    const timeRatio = clamp(extraction.timeRemaining / Math.max(0.001, extraction.timeLimit), 0, 1);
+    const boardRatio = clamp(extraction.progress / Math.max(0.001, extraction.holdDuration), 0, 1);
+    const critical = extraction.timeRemaining <= 5;
+    const width = Math.min(500, game.width - 120);
+    const height = 108;
+    const x = (game.width - width) / 2;
+    const y = clamp(game.height * 0.22, 132, game.height - height - 110);
+    const color = critical ? "#ffd08b" : "#98fff5";
+
+    ctx.save();
+    ctx.fillStyle = critical ? "rgba(25, 14, 9, 0.92)" : "rgba(7, 12, 24, 0.9)";
+    ctx.fillRect(x, y, width, height);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = critical ? 3 : 2;
+    ctx.strokeRect(x, y, width, height);
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = color;
+    ctx.font = "700 18px Segoe UI";
+    ctx.fillText(critical ? "EXTRACT NOW" : "EXTRACTION WINDOW", game.width / 2, y + 23);
+    ctx.font = "700 30px Segoe UI";
+    ctx.fillStyle = "#f2fffe";
+    ctx.fillText(formatTime(extraction.timeRemaining), game.width / 2, y + 54);
+    ctx.font = "600 11px Segoe UI";
+    ctx.fillStyle = "#b9d3ec";
+    ctx.fillText("Miss it: contract still clears, but no Echo archive is secured.", game.width / 2, y + 71);
+
+    const barX = x + 92;
+    const barWidth = width - 108;
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#9bb6cf";
+    ctx.fillText("Window", x + 16, y + 88);
+    ctx.fillText("Board", x + 16, y + 102);
+
+    ctx.fillStyle = "rgba(255,255,255,0.08)";
+    ctx.fillRect(barX, y + 79, barWidth, 8);
+    ctx.fillRect(barX, y + 93, barWidth, 8);
+    ctx.fillStyle = critical ? "#ffb36a" : "#86fff0";
+    ctx.fillRect(barX, y + 79, barWidth * timeRatio, 8);
+    ctx.fillStyle = "#dffbff";
+    ctx.fillRect(barX, y + 93, barWidth * boardRatio, 8);
+    ctx.restore();
   }
 
   function getHudTopRowHeight() {
@@ -204,7 +348,7 @@
       buffs.push({ name: "Overdrive", time: run.player.buffs.overdrive, color: "#9affcf" });
     }
     if (run.player.buffs.salvageRush > 0) {
-      buffs.push({ name: "Salvage Rush", time: run.player.buffs.salvageRush, color: "#ffd790" });
+      buffs.push({ name: "Recovery Rush", time: run.player.buffs.salvageRush, color: "#ffd790" });
     }
     if (run.player.buffs.magnetField > 0) {
       buffs.push({ name: "Magnet Field", time: run.player.buffs.magnetField, color: "#b9f2ff" });
@@ -293,12 +437,16 @@
       }
     }
     if (run.objective.type === "escort") {
-      ctx.strokeStyle = "rgba(214, 222, 232, 0.18)";
+      ctx.fillStyle = "rgba(143, 228, 255, 0.12)";
+      ctx.fillRect(x + run.objective.laneX * scaleX - 5, y, 10, mapHeight);
+      ctx.strokeStyle = "rgba(214, 245, 255, 0.24)";
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(x + run.objective.laneX * scaleX, y);
       ctx.lineTo(x + run.objective.laneX * scaleX, y + mapHeight);
       ctx.stroke();
+      ctx.fillStyle = "rgba(255, 217, 160, 0.75)";
+      ctx.fillRect(x + run.objective.laneX * scaleX - 10, y + run.objective.destinationY * scaleY - 1.5, 20, 3);
       for (const vehicle of run.objective.convoy) {
         if (!vehicle.alive || vehicle.secured || !vehicle.deployed) {
           continue;
@@ -345,6 +493,12 @@
       }
     }
     if (run.extraction) {
+      const pulseRadius = 5 + Math.sin(game.time * 5) * 1.6;
+      ctx.strokeStyle = "#98fff5";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(x + run.extraction.x * scaleX, y + run.extraction.y * scaleY, pulseRadius, 0, TWO_PI);
+      ctx.stroke();
       ctx.fillStyle = "#98fff5";
       ctx.fillRect(x + run.extraction.x * scaleX - 3, y + run.extraction.y * scaleY - 3, 6, 6);
     }

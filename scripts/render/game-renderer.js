@@ -63,6 +63,119 @@
     }
   }
 
+  function getEscortChannelSway(run, y) {
+    return Math.sin(y * 0.0034 + game.time * 0.24) * 18 + Math.sin(y * 0.0072 + 1.4) * 8;
+  }
+
+  function renderEscortChannel(ctx, run, zone) {
+    const drawRibbon = (leftPoints, rightPoints) => {
+      ctx.beginPath();
+      ctx.moveTo(leftPoints[0].x, leftPoints[0].y);
+      for (let index = 1; index < leftPoints.length; index += 1) {
+        ctx.lineTo(leftPoints[index].x, leftPoints[index].y);
+      }
+      for (let index = rightPoints.length - 1; index >= 0; index -= 1) {
+        ctx.lineTo(rightPoints[index].x, rightPoints[index].y);
+      }
+      ctx.closePath();
+    };
+
+    const halfWidth = 168;
+    const innerHalfWidth = 72;
+    const step = 180;
+    const leftPoints = [];
+    const rightPoints = [];
+    const innerLeftPoints = [];
+    const innerRightPoints = [];
+
+    for (let y = -step; y <= run.map.height + step; y += step) {
+      const sway = getEscortChannelSway(run, y);
+      leftPoints.push({ x: run.objective.laneX - halfWidth + sway, y });
+      rightPoints.push({ x: run.objective.laneX + halfWidth + sway * 0.86, y });
+      innerLeftPoints.push({ x: run.objective.laneX - innerHalfWidth + sway * 0.82, y });
+      innerRightPoints.push({ x: run.objective.laneX + innerHalfWidth + sway * 0.72, y });
+    }
+
+    const outerGradient = ctx.createLinearGradient(run.objective.laneX - halfWidth, 0, run.objective.laneX + halfWidth, 0);
+    outerGradient.addColorStop(0, "rgba(78, 132, 166, 0)");
+    outerGradient.addColorStop(0.18, "rgba(92, 162, 194, 0.08)");
+    outerGradient.addColorStop(0.5, "rgba(120, 216, 245, 0.16)");
+    outerGradient.addColorStop(0.82, "rgba(92, 162, 194, 0.08)");
+    outerGradient.addColorStop(1, "rgba(78, 132, 166, 0)");
+    ctx.fillStyle = outerGradient;
+    drawRibbon(leftPoints, rightPoints);
+    ctx.fill();
+
+    const innerGradient = ctx.createLinearGradient(run.objective.laneX - innerHalfWidth, 0, run.objective.laneX + innerHalfWidth, 0);
+    innerGradient.addColorStop(0, "rgba(120, 236, 255, 0)");
+    innerGradient.addColorStop(0.22, "rgba(135, 234, 255, 0.09)");
+    innerGradient.addColorStop(0.5, "rgba(176, 248, 255, 0.2)");
+    innerGradient.addColorStop(0.78, "rgba(135, 234, 255, 0.09)");
+    innerGradient.addColorStop(1, "rgba(120, 236, 255, 0)");
+    ctx.fillStyle = innerGradient;
+    drawRibbon(innerLeftPoints, innerRightPoints);
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(143, 228, 255, 0.28)";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(leftPoints[0].x, leftPoints[0].y);
+    for (let index = 1; index < leftPoints.length; index += 1) {
+      ctx.lineTo(leftPoints[index].x, leftPoints[index].y);
+    }
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(rightPoints[0].x, rightPoints[0].y);
+    for (let index = 1; index < rightPoints.length; index += 1) {
+      ctx.lineTo(rightPoints[index].x, rightPoints[index].y);
+    }
+    ctx.stroke();
+
+    ctx.strokeStyle = "rgba(223, 249, 255, 0.12)";
+    ctx.lineWidth = 1.25;
+    ctx.beginPath();
+    ctx.moveTo(innerLeftPoints[0].x, innerLeftPoints[0].y);
+    for (let index = 1; index < innerLeftPoints.length; index += 1) {
+      ctx.lineTo(innerLeftPoints[index].x, innerLeftPoints[index].y);
+    }
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(innerRightPoints[0].x, innerRightPoints[0].y);
+    for (let index = 1; index < innerRightPoints.length; index += 1) {
+      ctx.lineTo(innerRightPoints[index].x, innerRightPoints[index].y);
+    }
+    ctx.stroke();
+
+    for (let y = 110; y < run.map.height; y += 210) {
+      const sway = getEscortChannelSway(run, y);
+      ctx.save();
+      ctx.translate(run.objective.laneX + sway * 0.8, y);
+      ctx.rotate(run.objective.direction > 0 ? Math.PI / 2 : -Math.PI / 2);
+      ctx.globalAlpha = 0.12 + 0.08 * Math.sin(game.time * 2 + y * 0.01);
+      ctx.strokeStyle = "#dff9ff";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-18, -10);
+      ctx.lineTo(0, 0);
+      ctx.lineTo(-18, 10);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    ctx.strokeStyle = "rgba(255, 217, 160, 0.28)";
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(run.objective.laneX - 150, run.objective.destinationY);
+    ctx.lineTo(run.objective.laneX + 150, run.objective.destinationY);
+    ctx.stroke();
+    ctx.strokeStyle = zone.colors.objective;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(run.objective.laneX - 108, run.objective.destinationY);
+    ctx.lineTo(run.objective.laneX + 108, run.objective.destinationY);
+    ctx.stroke();
+  }
+
   function renderMission() {
     const ctx = game.ctx;
     const run = game.run;
@@ -113,24 +226,7 @@
     }
 
     if (run.objective.type === "escort" && !run.objective.complete) {
-      ctx.fillStyle = "rgba(220, 225, 232, 0.035)";
-      ctx.fillRect(run.objective.laneX - 150, 0, 300, run.map.height);
-      ctx.save();
-      ctx.setLineDash([18, 20]);
-      ctx.strokeStyle = "rgba(214, 222, 232, 0.12)";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(run.objective.laneX, 0);
-      ctx.lineTo(run.objective.laneX, run.map.height);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.strokeStyle = "rgba(255, 217, 160, 0.22)";
-      ctx.lineWidth = 5;
-      ctx.beginPath();
-      ctx.moveTo(run.objective.laneX - 140, run.objective.destinationY);
-      ctx.lineTo(run.objective.laneX + 140, run.objective.destinationY);
-      ctx.stroke();
-      ctx.restore();
+      renderEscortChannel(ctx, run, zone);
     }
 
     if (run.objective.type === "salvage") {
@@ -254,15 +350,30 @@
     }
 
     if (run.extraction) {
+      const pulse = 18 + Math.sin(game.time * 5.2) * 5;
       ctx.strokeStyle = "#98fff5";
       ctx.lineWidth = 4;
       ctx.beginPath();
       ctx.arc(run.extraction.x, run.extraction.y, run.extraction.radius, 0, TWO_PI);
       ctx.stroke();
+      ctx.strokeStyle = "rgba(152,255,245,0.45)";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(run.extraction.x, run.extraction.y, run.extraction.radius + pulse, 0, TWO_PI);
+      ctx.stroke();
       ctx.globalAlpha = 0.16 + run.extraction.progress * 0.3;
       ctx.fillStyle = "#88fff0";
       ctx.beginPath();
       ctx.arc(run.extraction.x, run.extraction.y, run.extraction.radius - 12, 0, TWO_PI);
+      ctx.fill();
+      ctx.globalAlpha = 0.9;
+      ctx.fillStyle = "#e6fffc";
+      ctx.beginPath();
+      ctx.moveTo(run.extraction.x, run.extraction.y - 14);
+      ctx.lineTo(run.extraction.x + 14, run.extraction.y);
+      ctx.lineTo(run.extraction.x, run.extraction.y + 14);
+      ctx.lineTo(run.extraction.x - 14, run.extraction.y);
+      ctx.closePath();
       ctx.fill();
       ctx.globalAlpha = 1;
     }
@@ -571,7 +682,9 @@
     renderPlayerFeedbackOverlay(run);
 
     const objective = getPrimaryObjectivePosition(run);
-    if (objective) {
+    if (run.extraction) {
+      renderExtractionGuidance(run);
+    } else if (objective) {
       const renderCameraX = run.camera.renderX ?? run.camera.x;
       const renderCameraY = run.camera.renderY ?? run.camera.y;
       const screenX = game.width / 2 + (objective.x - renderCameraX);
@@ -614,6 +727,7 @@
 
     renderDefenseOverlay(run);
     renderEscortOverlay(run);
+    renderExtractionOverlay(run);
     renderModeIntroOverlay(run);
     renderBuffOverlay(run);
     renderMinimap(run);

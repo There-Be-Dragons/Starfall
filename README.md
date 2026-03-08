@@ -1,12 +1,12 @@
-# Starfall Salvage
+# Starfall
 
-<p align="center"><img src="assets/logo.svg" alt="Starfall Salvage logo banner" width="900"></p>
+<p align="center"><img src="assets/logo.svg" alt="Starfall logo banner" width="900"></p>
 
-`Starfall Salvage` is a self-contained browser action roguelite built with plain `HTML`, `CSS`, and `JavaScript`.
+`Starfall` is a self-contained browser action roguelite built with plain `HTML`, `CSS`, and `JavaScript`.
 
 ## Run
 
-Open `index.html` in a browser, or double-click `Play-Starfall-Salvage.bat`.
+Open `index.html` in a browser, or double-click `Play-Starfall.bat`.
 
 ## Controls
 
@@ -21,20 +21,20 @@ Open `index.html` in a browser, or double-click `Play-Starfall-Salvage.bat`.
 
 ## Core Loop
 
-1. Select a ship frame in Haven Port.
+1. Select a ship frame in The Port.
 2. Spend meta-currency on the Foundry talent tree, class unlocks, and zone unlocks.
 3. Choose a contract with a mission type, threat tier, mutators, zone, and boss.
 4. Fight through the run, collect loot, level up, and draft relics.
 5. Use supply pods, prototype weapons, towers, missiles, combo surges, and class abilities to clear the objective and defeat the boss.
-6. Extract, collect rewards, archive a relic echo on successful runs, and return to the hub.
+6. Extract, collect rewards, archive a relic echo on successful runs, and return to The Port.
 
 ## Missions
 
-### `Salvage Sweep`
+### `Wreck Sweep`
 
 Recover unstable wreck cores scattered through the map.
 
-- The objective is to physically touch each salvage cache.
+- The objective is to physically touch each wreck cache.
 - Each cache completion spawns more pressure and pushes the run toward the boss phase.
 - Best for mobile frames and loot-routing builds.
 
@@ -56,10 +56,10 @@ Hold the drill reactor inside its defense ring until the lock completes.
 
 ### `Convoy Escort`
 
-Escort an armored convoy along the center route until the surviving trucks reach the far side of the map.
+Escort an armored convoy through the central freight channel until the surviving freighters reach the far side of the map.
 
 - Each contract rolls a visible allowed-loss percentage for the convoy.
-- Enemies can attack both the player and the convoy trucks with contact hits, projectiles, and hazards.
+- Enemies can attack both the player and the convoy freighters with contact hits, projectiles, and hazards.
 - If convoy losses reach the contract cap, the run fails immediately.
 - Best for intercept play, area denial, and durable escort-oriented builds.
 
@@ -288,9 +288,9 @@ The current combat model includes explicit cross-unit interactions.
 
 ## Level Encounters and Map Events
 
-### Salvage Caches
+### Wreck Caches
 
-- Main objective objects in `Salvage Sweep`
+- Main objective objects in `Wreck Sweep`
 - Must be physically secured by the player
 - Trigger extra combat pressure
 
@@ -310,17 +310,17 @@ The current combat model includes explicit cross-unit interactions.
 - Main objective in `Convoy Escort`
 - Truck-shaped convoy vehicles travel the center corridor either northbound or southbound
 - The convoy is protected by player intervention, not by passive immunity
-- Enemy contact, projectiles, and hazards can all damage convoy trucks
+- Enemy contact, projectiles, and hazards can all damage convoy freighters
 - Contract failure happens as soon as total convoy loss breaches the allowed percentage
 
 ### Supply Pods
 
 Mid-run drops that create tactical tempo swings.
 
-- `Cache Pod`: salvage, cores, and XP
+- `Cache Pod`: Scrap, cores, and XP
 - `Repair Pod`: hull and shield restoration
 - `Overclock Pod`: temporary combat overdrive
-- `Magnet Pod`: stronger salvage vacuum field
+- `Magnet Pod`: stronger pickup vacuum field
 
 ### Prototype Weapon Caches
 
@@ -411,7 +411,7 @@ Relics are draftable run-only power-ups. They stack up to a per-relic limit.
 - `Capacitor Mesh`: max shield and shield regeneration
 - `Reclaimer Nanites`: max health and instant heal
 - `Kinetic Feed`: fire rate
-- `Salvage Magnet`: pickup radius and Scrap gain
+- `Recovery Magnet`: pickup radius and Scrap gain
 - `Targeting Suite`: crit chance
 - `Archive Pulse`: XP gain
 
@@ -451,7 +451,7 @@ These activate automatically when the required relic pair is present.
 
 ## Permanent Upgrade Tree
 
-The Haven Port foundry is split into four branches and presented on a dedicated `Talent Tree` screen. The hub also shows a `Spec Readout` so current point spread is visible at a glance.
+The Port foundry is split into four branches and presented on a dedicated `Talent Tree` screen. The hub also shows a `Spec Readout` so current point spread is visible at a glance.
 
 ### Weapons Grid
 
@@ -475,7 +475,7 @@ The Haven Port foundry is split into four branches and presented on a dedicated 
 ### Command Mesh
 
 - `Archive Decoder`: XP gain
-- `Salvage Rigs`: Scrap gain
+- `Recovery Rigs`: Scrap gain
 - `Command Uplink`: class ability cooldown
 - `Kill Telemetry`: lower `Combo Surge` thresholds and grant surge shield bursts
 
@@ -505,7 +505,7 @@ The Haven Port foundry is split into four branches and presented on a dedicated 
 ### Achievements
 
 - `Boots On Deck`: first contract
-- `Salvage Veteran`: 15 completed contracts
+- `Contract Veteran`: 15 completed contracts
 - `Scrap Baron`: 5000 lifetime Scrap
 - `Boss Hunter`: 20 bosses defeated
 - `Threat Breaker`: clear Threat V

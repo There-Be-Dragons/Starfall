@@ -44,34 +44,78 @@
     if (!vehicle.alive || vehicle.secured || !vehicle.deployed) {
       return;
     }
+    const enginePulse = 0.65 + 0.35 * Math.sin(game.time * 8 + vehicle.id * 0.17);
+    const variant = vehicle.hullVariant || 0;
     ctx.save();
     ctx.translate(vehicle.x, vehicle.y);
     ctx.rotate(vehicle.facing);
-    ctx.globalAlpha = 0.16 + vehicle.flash * 0.5;
+    ctx.globalAlpha = 0.12 + vehicle.flash * 0.42;
     ctx.fillStyle = vehicle.accent;
-    ctx.fillRect(-vehicle.length * 0.56, -vehicle.width * 0.8, vehicle.length * 1.12, vehicle.width * 1.6);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, vehicle.length * 0.82, vehicle.width * 0.82, 0, 0, TWO_PI);
+    ctx.fill();
+    ctx.globalAlpha = 0.14 + enginePulse * 0.18;
+    ctx.beginPath();
+    ctx.moveTo(-vehicle.length * 0.54, -vehicle.width * 0.24);
+    ctx.lineTo(-vehicle.length * 0.88, -vehicle.width * 0.08);
+    ctx.lineTo(-vehicle.length * 0.88, vehicle.width * 0.08);
+    ctx.lineTo(-vehicle.length * 0.54, vehicle.width * 0.24);
+    ctx.closePath();
+    ctx.fill();
     ctx.globalAlpha = 1;
+
     ctx.fillStyle = "rgba(8, 14, 25, 0.96)";
     ctx.strokeStyle = vehicle.color;
     ctx.lineWidth = 2.4;
-    ctx.fillRect(-vehicle.length * 0.46, -vehicle.width * 0.42, vehicle.length * 0.62, vehicle.width * 0.84);
-    ctx.strokeRect(-vehicle.length * 0.46, -vehicle.width * 0.42, vehicle.length * 0.62, vehicle.width * 0.84);
-    ctx.fillStyle = vehicle.color;
-    ctx.fillRect(vehicle.length * 0.06, -vehicle.width * 0.34, vehicle.length * 0.3, vehicle.width * 0.68);
-    ctx.strokeStyle = "#f1f8ff";
-    ctx.lineWidth = 1.5;
-    ctx.strokeRect(vehicle.length * 0.06, -vehicle.width * 0.34, vehicle.length * 0.3, vehicle.width * 0.68);
+    ctx.beginPath();
+    ctx.moveTo(-vehicle.length * 0.48, -vehicle.width * 0.24);
+    ctx.lineTo(-vehicle.length * 0.14, -vehicle.width * 0.34);
+    ctx.lineTo(vehicle.length * 0.16, -vehicle.width * 0.34);
+    ctx.lineTo(vehicle.length * 0.4, -vehicle.width * 0.2);
+    ctx.lineTo(vehicle.length * 0.54, 0);
+    ctx.lineTo(vehicle.length * 0.4, vehicle.width * 0.2);
+    ctx.lineTo(vehicle.length * 0.16, vehicle.width * 0.34);
+    ctx.lineTo(-vehicle.length * 0.14, vehicle.width * 0.34);
+    ctx.lineTo(-vehicle.length * 0.48, vehicle.width * 0.24);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(235, 246, 255, 0.08)";
+    ctx.fillRect(-vehicle.length * 0.16, -vehicle.width * 0.23, vehicle.length * 0.4, vehicle.width * 0.46);
+
     ctx.fillStyle = vehicle.accent;
-    ctx.fillRect(-vehicle.length * 0.16, -2, vehicle.length * 0.22, 4);
-    ctx.fillStyle = "#0c1627";
-    ctx.fillRect(-vehicle.length * 0.28, -vehicle.width * 0.6, vehicle.length * 0.14, 5);
-    ctx.fillRect(-vehicle.length * 0.28, vehicle.width * 0.6 - 5, vehicle.length * 0.14, 5);
-    ctx.fillRect(vehicle.length * 0.18, -vehicle.width * 0.6, vehicle.length * 0.14, 5);
-    ctx.fillRect(vehicle.length * 0.18, vehicle.width * 0.6 - 5, vehicle.length * 0.14, 5);
+    ctx.beginPath();
+    ctx.moveTo(vehicle.length * 0.14, -vehicle.width * 0.14);
+    ctx.lineTo(vehicle.length * 0.38, -vehicle.width * 0.08);
+    ctx.lineTo(vehicle.length * 0.38, vehicle.width * 0.08);
+    ctx.lineTo(vehicle.length * 0.14, vehicle.width * 0.14);
+    ctx.closePath();
+    ctx.fill();
+
+    const moduleOffsets = variant === 0 ? [-0.22, 0.02, 0.24] : variant === 1 ? [-0.18, 0.12] : [-0.26, -0.02, 0.2];
+    ctx.fillStyle = "#0d1729";
+    ctx.strokeStyle = vehicle.color;
+    ctx.lineWidth = 1.25;
+    for (const offset of moduleOffsets) {
+      const moduleX = vehicle.length * offset;
+      ctx.fillRect(moduleX - vehicle.length * 0.055, -vehicle.width * 0.48, vehicle.length * 0.11, vehicle.width * 0.18);
+      ctx.strokeRect(moduleX - vehicle.length * 0.055, -vehicle.width * 0.48, vehicle.length * 0.11, vehicle.width * 0.18);
+      ctx.fillRect(moduleX - vehicle.length * 0.055, vehicle.width * 0.3, vehicle.length * 0.11, vehicle.width * 0.18);
+      ctx.strokeRect(moduleX - vehicle.length * 0.055, vehicle.width * 0.3, vehicle.length * 0.11, vehicle.width * 0.18);
+    }
+
+    ctx.fillStyle = vehicle.color;
+    ctx.fillRect(-vehicle.length * 0.28, -2, vehicle.length * 0.42, 4);
+    ctx.fillStyle = vehicle.accent;
+    ctx.globalAlpha = 0.8 + enginePulse * 0.2;
+    ctx.fillRect(-vehicle.length * 0.54, -vehicle.width * 0.16, vehicle.length * 0.08, vehicle.width * 0.12);
+    ctx.fillRect(-vehicle.length * 0.54, vehicle.width * 0.04, vehicle.length * 0.08, vehicle.width * 0.12);
+    ctx.globalAlpha = 1;
     ctx.restore();
 
     if (vehicle.hp < vehicle.maxHp || vehicle.flash > 0) {
-      const width = 46;
+      const width = 52;
       ctx.fillStyle = "rgba(0, 0, 0, 0.42)";
       ctx.fillRect(vehicle.x - width / 2, vehicle.y - vehicle.radius - 20, width, 5);
       ctx.fillStyle = "#ffd59b";

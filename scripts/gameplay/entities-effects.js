@@ -844,14 +844,14 @@
       activatePlayerBuff(run, "salvageRush", 14);
       dropRewardShards(run, "xp", 42 + run.contract.threat * 12, 4, pod.x, pod.y, 24);
       dropRewardShards(run, "scrap", (18 + run.contract.threat * 8) * run.player.stats.scrapGain, 2, pod.x, pod.y, 20);
-      game.pushNotification("Salvage Rush", "Weapons and recovery systems are overclocked.", "warn");
+      game.pushNotification("Recovery Rush", "Weapons and recovery systems are overclocked.", "warn");
     }
     if (pod.type === "magnet") {
       activatePlayerBuff(run, "magnetField", 18);
       magnetizePickups(run, pod.x, pod.y, 9999);
       dropRewardShards(run, "scrap", (22 + run.contract.threat * 10) * run.player.stats.scrapGain, 3, pod.x, pod.y, 20);
       dropRewardShards(run, "core", 1 + Math.floor(run.contract.threat * 0.55), 1, pod.x, pod.y, 20);
-      game.pushNotification("Magnet Field", "Nearby salvage now tears into your vacuum field.", "success");
+      game.pushNotification("Magnet Field", "Nearby debris now tears into your vacuum field.", "success");
     }
     game.playSfx("collect");
   }
