@@ -1032,7 +1032,7 @@
       this.ui.metaCoreText.textContent = this.save.currencies.cores;
       this.ui.metaRenownText.textContent = this.save.currencies.renown;
       const selectedClass = CLASS_DATA[this.save.selectedClass];
-      this.ui.profileSummary.textContent = `${selectedClass.name} licensed. ${this.save.profile.contractsWon} victories, best threat ${romanThreat(this.save.profile.highestThreat)}, ${this.save.profile.bossesKilled} bosses destroyed, ${this.save.relicArchive.relics.length}/${this.save.relicArchive.capacity} archived echoes stored.`;
+      this.ui.profileSummary.textContent = `${selectedClass.name} is mission-ready. ${this.save.profile.contractsWon} contract wins, peak threat ${romanThreat(this.save.profile.highestThreat)}, ${this.save.profile.bossesKilled} bosses destroyed, and ${this.save.relicArchive.relics.length}/${this.save.relicArchive.capacity} archived echoes available across your strike frames.`;
       this.renderMenuUI();
       this.renderClasses();
       this.renderZones();
@@ -1078,12 +1078,14 @@
         </div>
       `;
       this.ui.menuProgressShowcase.innerHTML = `
-        <div class="hero-title">Campaign Status</div>
-        <p>The Port is holding with <strong>${this.save.currencies.scrap}</strong> Scrap, <strong>${this.save.currencies.cores}</strong> Core Shards, and <strong>${this.save.profile.bossesKilled}</strong> bosses destroyed.</p>
+        <div class="hero-title">Game Profile</div>
+        <p><strong>Starfall</strong> is a contract-driven top-down sci-fi roguelite shooter built around objective variety, relic buildcraft, extraction pressure, and persistent Echo loadouts.</p>
         <div class="tag-row">
-          <span class="tag warn">Zones ${this.save.unlockedZones.length}/${Object.keys(ZONE_DATA).length}</span>
-          <span class="tag">Upgrades ${Object.values(this.save.upgradeLevels).reduce((sum, value) => sum + value, 0)}</span>
-          <span class="tag">Renown ${this.save.currencies.renown}</span>
+          <span class="tag warn">Top-Down Shooter</span>
+          <span class="tag">Action Roguelite</span>
+          <span class="tag">Objective Contracts</span>
+          <span class="tag">Extraction Finish</span>
+          <span class="tag">Persistent Buildcraft</span>
         </div>
       `;
     },

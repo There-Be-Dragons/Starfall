@@ -2,9 +2,18 @@
 
 <p align="center"><img src="assets/logo.svg" alt="Starfall logo banner" width="900"></p>
 
-`Starfall` is a self-contained browser action roguelite built with plain `HTML`, `CSS`, and `JavaScript`.
+`Starfall` is a top-down sci-fi action roguelite shooter where every contract combines objective pressure, relic drafting, boss escalation, and a tense extraction finish.
 
-## Run
+It is built with plain `HTML`, `CSS`, and `JavaScript`, runs directly in the browser, and uses original vector-driven presentation with no external dependencies.
+
+## Genre Snapshot
+
+- Primary genre: `Top-Down Sci-Fi Action Roguelite Shooter`
+- Secondary tags: `Objective-Based Shooter`, `Extraction Pressure`, `Buildcraft`, `Meta Progression`
+- Core structure: `Contract objective -> boss response -> extraction -> rewards -> Echo archive`
+- Long-term progression: `Ship unlocks`, `Zone unlocks`, `Foundry talents`, `Echo archive loadouts`
+
+## Launch
 
 Open `index.html` in a browser, or double-click `Play-Starfall.bat`.
 
