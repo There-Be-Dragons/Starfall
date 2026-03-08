@@ -2,18 +2,19 @@
 
 <p align="center"><img src="assets/logo.svg" alt="Starfall logo banner" width="900"></p>
 
-`Starfall` is a top-down sci-fi action roguelite shooter where every contract combines objective pressure, relic drafting, boss escalation, and a tense extraction finish.
+`Starfall` is a top-down sci-fi shooter with roguelite progression. Each run starts with a contract: finish the mission objective, survive the boss fight, and reach extraction if you want to keep a relic Echo for future runs.
 
-It is built with plain `HTML`, `CSS`, and `JavaScript`, runs directly in the browser, and uses original vector-driven presentation with no external dependencies.
+Over time you unlock new ships and zones, spend Scrap and Core Shards on permanent upgrades, and build up stronger starting options through the Echo archive.
 
-## Genre Snapshot
+It is built with plain `HTML`, `CSS`, and `JavaScript` and runs directly in the browser.
 
-- Primary genre: `Top-Down Sci-Fi Action Roguelite Shooter`
-- Secondary tags: `Objective-Based Shooter`, `Extraction Pressure`, `Buildcraft`, `Meta Progression`
-- Core structure: `Contract objective -> boss response -> extraction -> rewards -> Echo archive`
-- Long-term progression: `Ship unlocks`, `Zone unlocks`, `Foundry talents`, `Echo archive loadouts`
+## Overview
 
-## Launch
+- Genre: `Top-down sci-fi shooter` / `action roguelite`
+- Run flow: `objective -> boss -> extraction -> rewards`
+- Long-term progression: `ships`, `zones`, `Foundry upgrades`, `Echo archive`
+
+## Running the Game
 
 Open `index.html` in a browser, or double-click `Play-Starfall.bat`.
 

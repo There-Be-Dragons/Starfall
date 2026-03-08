@@ -1032,7 +1032,7 @@
       this.ui.metaCoreText.textContent = this.save.currencies.cores;
       this.ui.metaRenownText.textContent = this.save.currencies.renown;
       const selectedClass = CLASS_DATA[this.save.selectedClass];
-      this.ui.profileSummary.textContent = `${selectedClass.name} is mission-ready. ${this.save.profile.contractsWon} contract wins, peak threat ${romanThreat(this.save.profile.highestThreat)}, ${this.save.profile.bossesKilled} bosses destroyed, and ${this.save.relicArchive.relics.length}/${this.save.relicArchive.capacity} archived echoes available across your strike frames.`;
+      this.ui.profileSummary.textContent = `${selectedClass.name} is ready to deploy. You have ${this.save.profile.contractsWon} wins, reached threat ${romanThreat(this.save.profile.highestThreat)}, destroyed ${this.save.profile.bossesKilled} bosses, and stored ${this.save.relicArchive.relics.length}/${this.save.relicArchive.capacity} archived echoes.`;
       this.renderMenuUI();
       this.renderClasses();
       this.renderZones();
@@ -1078,14 +1078,14 @@
         </div>
       `;
       this.ui.menuProgressShowcase.innerHTML = `
-        <div class="hero-title">Game Profile</div>
-        <p><strong>Starfall</strong> is a contract-driven top-down sci-fi roguelite shooter built around objective variety, relic buildcraft, extraction pressure, and persistent Echo loadouts.</p>
+        <div class="hero-title">About The Game</div>
+        <p><strong>Starfall</strong> is a top-down sci-fi shooter with roguelite progression. Pick a contract, finish the objective, beat the boss, and extract if you want to keep an Echo for future runs.</p>
         <div class="tag-row">
           <span class="tag warn">Top-Down Shooter</span>
-          <span class="tag">Action Roguelite</span>
-          <span class="tag">Objective Contracts</span>
-          <span class="tag">Extraction Finish</span>
-          <span class="tag">Persistent Buildcraft</span>
+          <span class="tag">Roguelite</span>
+          <span class="tag">Contract Missions</span>
+          <span class="tag">Boss Fights</span>
+          <span class="tag">Ship Progression</span>
         </div>
       `;
     },
