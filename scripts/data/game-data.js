@@ -1356,13 +1356,21 @@
     "summaryRewards",
     "summaryArchiveTitle",
     "summaryArchiveChoices",
+    "tutorialTitle",
+    "tutorialLead",
+    "tutorialOverview",
+    "tutorialMapPreview",
+    "tutorialEnemyRoster",
+    "tutorialGroundIntel",
+    "tutorialMissionNotes",
     "optionMuteAudio",
     "optionMasterVolume",
     "optionSfxVolume",
     "optionMusicVolume",
     "optionScreenShake",
     "optionParticles",
-    "optionDefaultAutoFire"
+    "optionDefaultAutoFire",
+    "optionShowMissionTutorial"
   ];
 
   const UPGRADE_MAP = Object.fromEntries(PERMANENT_UPGRADES.map((upgrade) => [upgrade.id, upgrade]));

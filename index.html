@@ -37,7 +37,10 @@
         </div>
         <div class="status-card hud-mini-card">
           <div class="card-title">Mission</div>
-          <div class="stat-line"><span>Objective</span><strong id="objectiveLabel">-</strong></div>
+          <div class="hud-objective-block">
+            <span class="mini-label">Objective</span>
+            <strong id="objectiveLabel">-</strong>
+          </div>
           <div class="stat-line"><span>Elapsed</span><strong id="timerText">00:00</strong></div>
           <div class="stat-line"><span>Threat</span><strong id="threatText">I</strong></div>
         </div>
@@ -228,6 +231,47 @@
       </div>
     </section>
 
+    <section id="screen-tutorial" class="screen modal-screen">
+      <div class="panel modal-panel tutorial-panel">
+        <div class="panel-header tutorial-header">
+          <div>
+            <h2 id="tutorialTitle">Contract Briefing</h2>
+            <p id="tutorialLead" class="lead compact"></p>
+          </div>
+          <div class="tag-row">
+            <span class="tag success">Tutorial Pause</span>
+            <span class="tag">Close To Deploy</span>
+          </div>
+        </div>
+        <div class="tutorial-layout">
+          <div class="tutorial-column primary">
+            <div id="tutorialOverview" class="summary-grid tutorial-overview"></div>
+            <div class="help-card tutorial-map-card">
+              <h3>Field Layout</h3>
+              <div id="tutorialMapPreview" class="tutorial-map-preview"></div>
+            </div>
+            <div class="help-card">
+              <h3>Ground Intel</h3>
+              <div id="tutorialGroundIntel" class="tutorial-ground-grid"></div>
+            </div>
+          </div>
+          <div class="tutorial-column secondary">
+            <div class="help-card">
+              <h3>Threat Roster</h3>
+              <div id="tutorialEnemyRoster" class="tutorial-roster"></div>
+            </div>
+            <div class="help-card">
+              <h3>Mission Notes</h3>
+              <div id="tutorialMissionNotes" class="tutorial-notes"></div>
+            </div>
+          </div>
+        </div>
+        <div class="button-row align-end">
+          <button class="primary" data-action="dismiss-tutorial">Start Contract</button>
+        </div>
+      </div>
+    </section>
+
     <section id="screen-pause" class="screen modal-screen">
       <div class="panel modal-panel small">
         <h2>Mission Paused</h2>
@@ -289,6 +333,10 @@
             <input id="optionDefaultAutoFire" type="checkbox">
             <span>Enable Auto-Fire On New Runs</span>
           </label>
+          <label class="toggle-row">
+            <input id="optionShowMissionTutorial" type="checkbox">
+            <span>Show Mission Tutorial Briefing At Contract Start</span>
+          </label>
         </div>
         <div class="button-row">
           <button class="primary" data-action="save-options">Save</button>
@@ -341,6 +389,19 @@
     </section>
   </div>
 
-  <script src="game.js" defer></script>
+  <script src="scripts/data/game-data.js" defer></script>
+  <script src="scripts/core/game-utils.js" defer></script>
+  <script src="scripts/gameplay/world-systems.js" defer></script>
+  <script src="scripts/gameplay/entities-effects.js" defer></script>
+  <script src="scripts/gameplay/run-state.js" defer></script>
+  <script src="scripts/gameplay/mission-loop.js" defer></script>
+  <script src="scripts/render/entities/render-projectiles.js" defer></script>
+  <script src="scripts/render/entities/render-structures.js" defer></script>
+  <script src="scripts/render/entities/render-effects.js" defer></script>
+  <script src="scripts/render/entities/render-player.js" defer></script>
+  <script src="scripts/render/entities/render-enemies.js" defer></script>
+  <script src="scripts/render/overlays/render-ui-overlays.js" defer></script>
+  <script src="scripts/render/game-renderer.js" defer></script>
+  <script src="scripts/app/game-app.js" defer></script>
 </body>
 </html>

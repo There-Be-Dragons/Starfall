@@ -241,7 +241,8 @@
         musicVolume: 52,
         screenShake: 70,
         particles: true,
-        defaultAutoFire: false
+        defaultAutoFire: false,
+        showMissionTutorial: true
       },
       lastContract: null,
       profile: {

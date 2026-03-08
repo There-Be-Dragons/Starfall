@@ -1,6 +1,253 @@
 // Application bootstrap, UI orchestration, audio, and screen management.
 "use strict";
 
+  const BRIEFING_PORTRAIT_PATHS = {
+    crawler: "assets/enemies/crawler.svg",
+    raider: "assets/enemies/raider.svg",
+    gunner: "assets/enemies/gunner.svg",
+    mortar: "assets/enemies/mortar.svg",
+    wasp: "assets/enemies/wasp.svg",
+    sentinel: "assets/enemies/sentinel.svg",
+    siphon: "assets/enemies/siphon.svg",
+    ironReaper: "assets/enemies/iron-reaper.svg",
+    emberHydra: "assets/enemies/ember-hydra.svg",
+    nullMatriarch: "assets/enemies/null-matriarch.svg",
+    vaultTitan: "assets/enemies/vault-titan.svg"
+  };
+
+  const ENEMY_BEHAVIOR_LABELS = {
+    melee: "Melee",
+    charger: "Charger",
+    ranged: "Ranged",
+    mortar: "Artillery",
+    skirmish: "Skirmisher",
+    support: "Support",
+    drain: "Disruptor"
+  };
+
+  const ENEMY_BEHAVIOR_BRIEFING = {
+    melee: "Closes distance directly and punishes any gap in your frontline control.",
+    charger: "Uses burst movement to crash exposed angles and break safe spacing.",
+    ranged: "Stays at mid-range and pressures you with disciplined direct fire.",
+    mortar: "Bombards from long range and forces movement with splash zones.",
+    skirmish: "Swings wide, circles fast, and overloads quiet lanes if ignored.",
+    support: "Protects priority allies and makes the whole enemy pack harder to break.",
+    drain: "Applies slowing pressure and feeds sustain into dangerous targets."
+  };
+
+  const BOSS_BRIEFING_TEXT = {
+    ironReaper: "Aggressive commander that floods the field with spread fire and reinforcement pressure.",
+    emberHydra: "Area-denial boss that stacks missile salvos with burning ground hazards.",
+    nullMatriarch: "Teleporting disruption boss that mixes slows, shields, and support pressure.",
+    vaultTitan: "Heavy suppressor that locks lanes with disciplined ranged fire and beam attacks."
+  };
+
+  const ANOMALY_BRIEFING_TEXT = {
+    mine: "Triggered mines that punish careless movement and tight kiting routes.",
+    vent: "Thermal bursts and burning pools that turn safe ground into danger zones.",
+    rift: "Pull fields that drag you out of position and punish overcommitment.",
+    pylon: "Storm emitters that seed the map with repeated projectile pressure."
+  };
+
+  function getBriefingPortraitPath(id) {
+    return BRIEFING_PORTRAIT_PATHS[id] || "";
+  }
+
+  function getEnemyBriefingDescription(enemyId) {
+    const behavior = ENEMY_DATA[enemyId]?.behavior;
+    return ENEMY_BEHAVIOR_BRIEFING[behavior] || "Hostile contact with mixed pressure patterns.";
+  }
+
+  function getBossBriefingDescription(bossId) {
+    return BOSS_BRIEFING_TEXT[bossId] || "Zone commander with layered pressure and lethal phase spikes.";
+  }
+
+  function getMissionTutorialObjectiveText(run) {
+    if (run.objective.type === "salvage") {
+      return `Secure ${run.objective.total} unstable wreck caches. Every cache you touch raises the response level and brings the boss closer.`;
+    }
+    if (run.objective.type === "hunt") {
+      return `Eliminate ${run.objective.total} marked lieutenants. Once the last elite target falls, the zone boss deploys immediately.`;
+    }
+    if (run.objective.type === "defense") {
+      return "Hold the reactor inside its defense ring. Standing in the cyan ring helps stabilize the lock while support turrets fight beside you.";
+    }
+    if (run.objective.type === "escort") {
+      return `Protect the armored convoy through the center lane. Reserve vehicles feed in from the wall and total losses must stay under ${run.contract.allowedLossPercent}%.`;
+    }
+    return MISSION_TYPES[run.contract.missionType].desc;
+  }
+
+  function getMissionTutorialNotes(run) {
+    const mutatorText = run.contract.mutators.length
+      ? run.contract.mutators.map((id) => `${MUTATORS[id].name}: ${MUTATORS[id].desc}`).join(" ")
+      : "No mutators rolled on this contract, so you only have the base mission pressure to manage.";
+    const notes = [
+      {
+        title: "Objective",
+        text: getMissionTutorialObjectiveText(run)
+      },
+      {
+        title: "Boss Response",
+        text: `${BOSS_DATA[run.zone.bossId].name} will answer the contract after the objective phase. ${getBossBriefingDescription(run.zone.bossId)}`
+      },
+      {
+        title: "Contract Modifiers",
+        text: mutatorText
+      },
+      {
+        title: "Controls",
+        text: "`WASD` move, mouse aim, `LMB` fire, `Shift` dash, `Q/E/R/F` abilities, `T` deploy tower, `C` auto-fire, `Esc` pause."
+      }
+    ];
+    return notes;
+  }
+
+  function getGroundIntelEntries(run) {
+    const entries = [
+      {
+        key: "salvage",
+        name: "Field Salvage",
+        color: "#ffd790",
+        desc: "Destroyed hostiles spill Scrap, XP, Core Shards, hull cells, and shield cells into the sector."
+      },
+      {
+        key: "pods",
+        name: "Supply Pods",
+        color: SUPPLY_POD_TYPES.cache.color,
+        desc: "Combat tempo, time in zone, and kill streaks call down cache, repair, overclock, or magnet pods."
+      }
+    ];
+    const prototypeIds = [...new Set(run.prototypeCaches.filter((cache) => cache.active).map((cache) => cache.weaponId))];
+    for (const weaponId of prototypeIds) {
+      const weapon = PROTOTYPE_WEAPONS[weaponId];
+      entries.push({
+        key: `prototype-${weaponId}`,
+        name: weapon.name,
+        color: weapon.color,
+        desc: weapon.desc
+      });
+    }
+    const anomalyTypes = [...new Set(run.anomalies.map((anomaly) => anomaly.type))];
+    for (const type of anomalyTypes) {
+      entries.push({
+        key: `anomaly-${type}`,
+        name: ANOMALY_TYPES[type].name,
+        color: ANOMALY_TYPES[type].color,
+        desc: ANOMALY_BRIEFING_TEXT[type]
+      });
+    }
+    if (run.teleporters.length) {
+      entries.push({
+        key: "teleporters",
+        name: "Transient Relay",
+        color: "#8ff7ff",
+        desc: "Paired gates phase in for short windows and let you jump instantly across the map."
+      });
+    }
+    if (run.contract.missionType === "escort") {
+      entries.push({
+        key: "convoy",
+        name: "Convoy Reserves",
+        color: "#d7dde6",
+        desc: "Extra transports feed into the wall lane over time, so early losses do not end the contract by themselves."
+      });
+    }
+    return entries;
+  }
+
+  function buildTutorialMapMarkup(run) {
+    const markerMap = new Map();
+    const mapWidth = Math.max(1, run.map.width);
+    const mapHeight = Math.max(1, run.map.height);
+    const toLeft = (value) => clamp((value / mapWidth) * 100, 2, 98);
+    const toTop = (value) => clamp((value / mapHeight) * 100, 2, 98);
+    const scene = [];
+
+    const addLegend = (key, label, color) => {
+      if (!markerMap.has(key)) {
+        markerMap.set(key, { label, color });
+      }
+    };
+
+    const addMarker = (x, y, className, label, color) => {
+      scene.push(`<span class="tutorial-map-marker ${className}" style="left:${toLeft(x)}%; top:${toTop(y)}%" title="${label}"></span>`);
+      addLegend(className, label, color);
+    };
+
+    addMarker(run.map.spawn.x, run.map.spawn.y, "player", "Drop Point", "#9ff7ff");
+
+    if (run.objective.type === "salvage") {
+      for (const node of run.objective.nodes) {
+        addMarker(node.x, node.y, "objective", "Salvage Cache", run.zone.colors.objective);
+      }
+    }
+
+    if (run.objective.type === "hunt") {
+      for (const enemy of run.enemies.filter((entry) => entry.objectiveTarget)) {
+        addMarker(enemy.x, enemy.y, "objective", "Lieutenant Target", "#ffad8d");
+      }
+    }
+
+    if (run.objective.type === "defense") {
+      const reactor = run.objective.reactor;
+      scene.push(`
+        <span
+          class="tutorial-map-ring"
+          style="
+            left:${toLeft(reactor.x)}%;
+            top:${toTop(reactor.y)}%;
+            width:${(reactor.guardRadius * 2 / mapWidth) * 100}%;
+            height:${(reactor.guardRadius * 2 / mapHeight) * 100}%;
+          "
+        ></span>
+      `);
+      addMarker(reactor.x, reactor.y, "reactor", "Reactor Core", "#9ff3ff");
+    }
+
+    if (run.objective.type === "escort") {
+      scene.push(`<span class="tutorial-map-lane" style="left:${toLeft(run.objective.laneX)}%"></span>`);
+      scene.push(`<span class="tutorial-map-goal" style="top:${toTop(run.objective.destinationY)}%"></span>`);
+      for (const vehicle of run.objective.convoy) {
+        addMarker(
+          vehicle.x,
+          vehicle.y,
+          vehicle.deployed ? "convoy" : "reserve",
+          vehicle.deployed ? "Convoy Unit" : "Reserve Convoy Unit",
+          vehicle.deployed ? vehicle.accent : "#d7dde6"
+        );
+      }
+    }
+
+    for (const anomaly of run.anomalies) {
+      addMarker(anomaly.x, anomaly.y, "anomaly", ANOMALY_TYPES[anomaly.type].name, ANOMALY_TYPES[anomaly.type].color);
+    }
+
+    for (const cache of run.prototypeCaches) {
+      addMarker(cache.x, cache.y, "cache", PROTOTYPE_WEAPONS[cache.weaponId].name, PROTOTYPE_WEAPONS[cache.weaponId].color);
+    }
+
+    for (const pair of run.teleporters) {
+      for (const endpoint of pair.endpoints) {
+        addMarker(endpoint.x, endpoint.y, "relay", "Transient Relay", "#8ff7ff");
+      }
+    }
+
+    const legendHtml = [...markerMap.values()].map((entry) => `
+      <span class="tutorial-map-legend-item">
+        <span class="tutorial-map-legend-dot" style="--legend-color:${entry.color}"></span>
+        ${entry.label}
+      </span>
+    `).join("");
+
+    return `
+      <div class="tutorial-map-scene">
+        ${scene.join("")}
+      </div>
+      <div class="tutorial-map-legend">${legendHtml}</div>
+    `;
+  }
+
   const game = {
     canvas: null,
     ctx: null,
@@ -46,6 +293,7 @@
         hub: el("screen-hub"),
         talents: el("screen-talents"),
         levelup: el("screen-levelup"),
+        tutorial: el("screen-tutorial"),
         pause: el("screen-pause"),
         summary: el("screen-summary"),
         options: el("screen-options"),
@@ -574,6 +822,10 @@
         this.closeModal();
         return;
       }
+      if (this.activeModal === "tutorial") {
+        this.dismissMissionTutorial();
+        return;
+      }
       if (this.activeModal === "pause") {
         this.activeModal = null;
         this.refreshScreens();
@@ -611,6 +863,9 @@
         case "save-options":
           this.saveOptionsFromInputs();
           this.closeModal();
+          break;
+        case "dismiss-tutorial":
+          this.dismissMissionTutorial();
           break;
         case "close-modal":
           this.closeModal();
@@ -654,6 +909,7 @@
       this.ui.optionScreenShake.value = this.save.options.screenShake;
       this.ui.optionParticles.checked = this.save.options.particles;
       this.ui.optionDefaultAutoFire.checked = this.save.options.defaultAutoFire;
+      this.ui.optionShowMissionTutorial.checked = this.save.options.showMissionTutorial !== false;
     },
 
     saveOptionsFromInputs() {
@@ -664,6 +920,7 @@
       this.save.options.screenShake = Number(this.ui.optionScreenShake.value);
       this.save.options.particles = this.ui.optionParticles.checked;
       this.save.options.defaultAutoFire = this.ui.optionDefaultAutoFire.checked;
+      this.save.options.showMissionTutorial = this.ui.optionShowMissionTutorial.checked;
       this.syncAudioMix(true);
       this.saveGame();
       this.playSfx("collect");
@@ -782,7 +1039,7 @@
           ${getShipPreviewSvg(selectedClass.id)}
           <div class="ship-meta">
             <strong>${selectedClass.name}</strong>
-            <div class="muted">${selectedClass.frameName} â€¢ ${selectedClass.manufacturer}</div>
+            <div class="muted">${selectedClass.frameName} • ${selectedClass.manufacturer}</div>
             <p>${selectedClass.signature}</p>
           </div>
         </div>
@@ -1231,11 +1488,11 @@
       this.ui.xpBar.style.width = `${(player.xp / player.xpToNext) * 100}%`;
       this.ui.xpText.textContent = `${Math.round(player.xp)} / ${Math.round(player.xpToNext)}`;
       this.ui.timerText.textContent = formatTime(this.run.time);
-      this.ui.threatText.textContent = `${romanThreat(this.run.contract.threat)} â€¢ G${this.run.spawnState.gameLevel}`;
+      this.ui.threatText.textContent = `${romanThreat(this.run.contract.threat)} • G${this.run.spawnState.gameLevel}`;
       this.ui.runScrapText.textContent = String(this.run.rewards.scrap);
       this.ui.runCoreText.textContent = String(this.run.rewards.cores);
       const nextTowerCost = this.run.stats.towersBuilt >= this.run.towerLimit ? "-" : getTowerDeployCost(this.run);
-      this.ui.streakText.textContent = `${this.run.stats.towersBuilt}/${this.run.towerLimit} â€¢ ${nextTowerCost}`;
+      this.ui.streakText.textContent = `${this.run.stats.towersBuilt}/${this.run.towerLimit} • ${nextTowerCost}`;
       this.ui.dashCooldownBar.style.width = `${100 - (player.dashCooldownRemaining / player.stats.dashCooldown) * 100}%`;
       this.ui.dashLabel.textContent = player.dashCooldownRemaining > 0 ? `${player.dashCooldownRemaining.toFixed(1)}s` : "Ready";
       for (const slot of ABILITY_SLOT_ORDER) {
@@ -1244,7 +1501,7 @@
         const unlocked = isAbilityUnlocked(player, slot);
         const maxCooldown = getAbilityCooldownSeconds(player, slot);
         const current = player.abilityCooldowns[slot];
-        this.ui[`ability${keyName}Name`].textContent = `${keyName} â€¢ ${def.name}`;
+        this.ui[`ability${keyName}Name`].textContent = `${keyName} • ${def.name}`;
         this.ui[`ability${keyName}Bar`].style.width = unlocked
           ? `${100 - (current / Math.max(0.001, maxCooldown)) * 100}%`
           : "0%";
@@ -1277,14 +1534,14 @@
         if (this.run.objective.complete) {
           return "Reactor secured. Eliminate the boss.";
         }
-        return `Defend Reactor â€¢ Hull ${Math.round(reactor.hp)}/${Math.round(reactor.maxHp)} â€¢ Shield ${Math.round(reactor.shield)}/${Math.round(reactor.maxShield)}`;
+        return `Defend Reactor • Hull ${Math.round(reactor.hp)}/${Math.round(reactor.maxHp)} • Shield ${Math.round(reactor.shield)}/${Math.round(reactor.maxShield)}`;
       }
       if (this.run.objective.type === "escort") {
         const objective = this.run.objective;
         if (objective.complete) {
           return "Convoy secured. Eliminate the boss.";
         }
-        return `Escort Convoy â€¢ Loss ${Math.round(objective.lossPercent)}/${objective.allowedLossPercent}% â€¢ Units ${objective.survivors}/${objective.convoy.length}`;
+        return `Escort Convoy • Loss ${Math.round(objective.lossPercent)}/${objective.allowedLossPercent}% • Units ${objective.survivors}/${objective.convoy.length}`;
       }
       return "-";
     },
@@ -1515,7 +1772,7 @@
           this.save.achievements[achievement.id] = Date.now();
           addReward(this.save, achievement.reward);
           unlockedNow.push(achievement);
-          this.pushNotification("Achievement Unlocked", `${achievement.name} â€¢ ${formatCost(achievement.reward)}`, "success");
+          this.pushNotification("Achievement Unlocked", `${achievement.name} • ${formatCost(achievement.reward)}`, "success");
         }
       }
       return unlockedNow;
