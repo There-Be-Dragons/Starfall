@@ -530,6 +530,92 @@ button:disabled {
   filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.28));
 }
 
+.ship-echo-panel {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 0.7rem;
+}
+
+.ship-echo-panel.compact {
+  margin-bottom: 0.55rem;
+}
+
+.ship-echo-panel .selection-footer {
+  margin-top: 0;
+}
+
+.ship-echo-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(116px, 1fr));
+  gap: 0.45rem;
+}
+
+.ship-echo-slots.compact {
+  grid-template-columns: repeat(auto-fit, minmax(74px, 1fr));
+  gap: 0.38rem;
+}
+
+.ship-echo-slot {
+  min-width: 0;
+  min-height: 56px;
+  padding: 0.5rem 0.58rem;
+  border-radius: 14px;
+  border: 1px solid rgba(130, 177, 255, 0.14);
+  background: linear-gradient(180deg, rgba(19, 30, 56, 0.88), rgba(8, 14, 27, 0.9));
+  display: grid;
+  align-content: center;
+  gap: 0.12rem;
+}
+
+.ship-echo-slot.filled {
+  border-color: var(--slot-accent);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.ship-echo-slot.empty {
+  border-style: dashed;
+  color: var(--muted);
+  background: linear-gradient(180deg, rgba(14, 21, 39, 0.82), rgba(7, 11, 21, 0.86));
+}
+
+.ship-echo-slot.empty strong,
+.ship-echo-slot.empty span {
+  color: var(--muted);
+}
+
+.ship-echo-slot strong,
+.ship-echo-slot span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ship-echo-slot strong {
+  color: #eff8ff;
+  font-size: 0.78rem;
+}
+
+.ship-echo-slot span {
+  color: var(--muted);
+  font-size: 0.67rem;
+}
+
+.ship-echo-slot.compact {
+  min-height: 48px;
+  padding: 0.38rem 0.45rem;
+  text-align: center;
+}
+
+.ship-echo-slot.compact strong {
+  letter-spacing: 0.08em;
+  font-size: 0.74rem;
+}
+
+.ship-echo-slot.compact span {
+  font-size: 0.61rem;
+}
+
 .hero-title,
 .subpanel-title,
 .card-title {
@@ -1190,14 +1276,14 @@ button:disabled {
 
 .hud-ability-card {
   flex: 0 0 auto;
-  width: min(305px, 31vw);
-  max-width: 305px;
+  width: min(326px, 33vw);
+  max-width: 326px;
 }
 
 .ability-card .ability-line strong {
-  min-width: 74px;
+  min-width: 88px;
   text-align: right;
-  font-size: 0.8rem;
+  font-size: 0.77rem;
 }
 
 .label-line {
@@ -1489,8 +1575,8 @@ button:disabled {
   }
 
   .hud-ability-card {
-    width: min(285px, 34vw);
-    max-width: 285px;
+    width: min(308px, 36vw);
+    max-width: 308px;
   }
 
   .briefing-roster {
@@ -1542,9 +1628,9 @@ button:disabled {
   }
 
   .hud-ability-card {
-    width: min(220px, 42vw);
+    width: min(236px, 44vw);
     min-width: 180px;
-    max-width: 220px;
+    max-width: 236px;
   }
 
   .mini-help {

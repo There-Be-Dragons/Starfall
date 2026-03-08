@@ -24,6 +24,9 @@
       bossDamageMultiplier: 1,
       burnChance: 0,
       slowChance: 0,
+      towerLimitBonus: 0,
+      towerCooldown: 15,
+      towerCostMultiplier: 1,
       projectiles: 1,
       pierce: 0,
       chainCount: classData.weapon === "arc" ? 1 : 0,
@@ -56,6 +59,7 @@
       facing: 0,
       fireCooldown: 0,
       dashCooldownRemaining: 0,
+      towerCooldownRemaining: 0,
       dashTime: 0,
       dashDirection: { x: 1, y: 0 },
       invuln: 0,
@@ -77,6 +81,7 @@
       comboFlash: 0,
       dashFlash: 0,
       afterimageTimer: 0,
+      economyHintAt: 0,
       comboPower: {
         tier: 0,
         timer: 0
@@ -342,7 +347,22 @@
   }
 
   function getTowerDeployCost(run) {
-    return run.towerBaseCost + run.stats.towersBuilt * run.towerCostIncrement;
+    if (!run?.player) {
+      return run.towerBaseCost + run.stats.towersBuilt * run.towerCostIncrement;
+    }
+    return Math.max(18, Math.round((run.towerBaseCost + run.stats.towersBuilt * run.towerCostIncrement) * run.player.stats.towerCostMultiplier));
+  }
+
+  function getTowerDeployCooldown(run) {
+    return Math.max(4.5, run?.player?.stats?.towerCooldown || 15);
+  }
+
+  function getTowerDeployLimit(run) {
+    if (!run?.player) {
+      return run?.baseTowerLimit || 0;
+    }
+    const levelBonus = Math.floor(Math.max(0, run.player.level - 1) / 5);
+    return clamp((run.baseTowerLimit || 0) + levelBonus + Math.round(run.player.stats.towerLimitBonus || 0), 1, 18);
   }
 
   function snapshotTowerLoadout(player) {
@@ -408,22 +428,31 @@
   }
 
   function deployDefenseTower(run) {
-    if (!run || run.stats.towersBuilt >= run.towerLimit) {
-      game.pushNotification("Tower Limit Reached", `No more than ${run.towerLimit} towers can be deployed this run.`, "warn");
+    if (!run) {
+      return;
+    }
+    const towerLimit = getTowerDeployLimit(run);
+    if (run.stats.towersBuilt >= towerLimit) {
+      game.pushNotification("Tower Limit Reached", `No more than ${towerLimit} towers can be deployed this run.`, "warn");
+      return;
+    }
+    if (run.player.towerCooldownRemaining > 0) {
+      if ((run.player.economyHintAt || 0) + 1 < run.time) {
+        run.player.economyHintAt = run.time;
+        game.pushNotification("Fabricators Recharging", `Tower deployment will be ready in ${run.player.towerCooldownRemaining.toFixed(1)}s.`, "warn");
+      }
       return;
     }
     const cost = getTowerDeployCost(run);
-    if (run.rewards.scrap < cost) {
-      game.pushNotification("Insufficient Scrap", `Defense tower deployment costs ${cost} Scrap.`, "warn");
-      return;
-    }
     const desiredPoint = getClampedPointerTarget(run, 210);
     const point = findTowerPlacementPoint(run, desiredPoint.x, desiredPoint.y);
     if (!point) {
       game.pushNotification("Deployment Blocked", "Move the cursor to a clear area near your ship.", "warn");
       return;
     }
-    run.rewards.scrap -= cost;
+    if (!trySpendRunScrap(run, cost, "Tower deployment")) {
+      return;
+    }
     const loadout = snapshotTowerLoadout(run.player);
     const maxHp = 150 + run.contract.threat * 16 + (loadout.weapon === "cannon" ? 28 : 0) + (loadout.prototypeWeaponId ? 14 : 0);
     run.towers.push({
@@ -444,6 +473,7 @@
       loadout
     });
     run.stats.towersBuilt += 1;
+    run.player.towerCooldownRemaining = getTowerDeployCooldown(run);
     burstParticles(run, point.x, point.y, loadout.color, 18, 15, 110, 1.8, 4.2, 0.18, 0.42);
     game.pushNotification("Tower Deployed", `${CLASS_DATA[loadout.classId].name} tower online for ${cost} Scrap.`, "success");
     game.playSfx("ability");

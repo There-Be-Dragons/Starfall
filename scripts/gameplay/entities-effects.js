@@ -146,6 +146,33 @@
     return getAbilityDefinitionForClass(player.classId, slot).cooldown * (player.stats.abilityCooldown / baseClassCooldown);
   }
 
+  function getAbilityScrapCost(player, slot) {
+    const def = getAbilityDefinitionForClass(player.classId, slot);
+    const slotFloor = {
+      q: 5,
+      e: 7,
+      r: 10,
+      t: 15
+    };
+    return Math.max(slotFloor[slot] || 5, Math.round(def.cooldown * 0.38 + def.unlockLevel * 0.85));
+  }
+
+  function trySpendRunScrap(run, cost, label) {
+    if (cost <= 0) {
+      return true;
+    }
+    if (run.rewards.scrap >= cost) {
+      run.rewards.scrap -= cost;
+      run.stats.scrapSpent += cost;
+      return true;
+    }
+    if ((run.player.economyHintAt || 0) + 1 < run.time) {
+      run.player.economyHintAt = run.time;
+      game.pushNotification("Insufficient Scrap", `${label} needs ${cost} Scrap.`, "warn");
+    }
+    return false;
+  }
+
   function getWeaponDamageMultiplier(weapon) {
     return {
       rifle: 0.54,
@@ -830,7 +857,7 @@
     burstParticles(run, pod.x, pod.y, type.color, 24, 30, 220, 2, 5.5, 0.25, 0.65);
     spawnFloater(run, type.name, pod.x, pod.y - 8, type.accent, 1.05, 1);
     if (pod.type === "cache") {
-      dropRewardShards(run, "scrap", (30 + run.contract.threat * 16) * run.player.stats.scrapGain, 4 + Math.floor(run.contract.threat / 2), pod.x, pod.y, 34);
+      dropRewardShards(run, "scrap", (22 + run.contract.threat * 10) * run.player.stats.scrapGain, 3 + Math.floor(run.contract.threat / 3), pod.x, pod.y, 34);
       dropRewardShards(run, "xp", 38 + run.contract.threat * 10, 3 + Math.floor(run.contract.threat / 2), pod.x, pod.y, 28);
       dropRewardShards(run, "core", 2 + Math.floor(run.contract.threat * 0.8), 1 + Math.floor(run.contract.threat / 3), pod.x, pod.y, 22);
     }
@@ -843,13 +870,13 @@
     if (pod.type === "overclock") {
       activatePlayerBuff(run, "salvageRush", 14);
       dropRewardShards(run, "xp", 42 + run.contract.threat * 12, 4, pod.x, pod.y, 24);
-      dropRewardShards(run, "scrap", (18 + run.contract.threat * 8) * run.player.stats.scrapGain, 2, pod.x, pod.y, 20);
+      dropRewardShards(run, "scrap", (12 + run.contract.threat * 5) * run.player.stats.scrapGain, 2, pod.x, pod.y, 20);
       game.pushNotification("Recovery Rush", "Weapons and recovery systems are overclocked.", "warn");
     }
     if (pod.type === "magnet") {
       activatePlayerBuff(run, "magnetField", 18);
       magnetizePickups(run, pod.x, pod.y, 9999);
-      dropRewardShards(run, "scrap", (22 + run.contract.threat * 10) * run.player.stats.scrapGain, 3, pod.x, pod.y, 20);
+      dropRewardShards(run, "scrap", (15 + run.contract.threat * 6) * run.player.stats.scrapGain, 2, pod.x, pod.y, 20);
       dropRewardShards(run, "core", 1 + Math.floor(run.contract.threat * 0.55), 1, pod.x, pod.y, 20);
       game.pushNotification("Magnet Field", "Nearby debris now tears into your vacuum field.", "success");
     }
@@ -885,7 +912,7 @@
     dropRewardShards(run, "xp", xpTotal, xpPieces, enemy.x, enemy.y, isBoss ? 52 : 24);
 
     const scrapBase = isBoss
-      ? (105 + run.contract.threat * 26) * run.player.stats.scrapGain
+      ? (76 + run.contract.threat * 18) * run.player.stats.scrapGain
       : Math.max(1, Math.round(enemy.scrap * run.player.stats.scrapGain * (enemy.elite ? 1.35 : 1)));
     const scrapPieces = isBoss ? 6 + Math.floor(run.contract.threat / 2) : enemy.elite ? 3 : clamp(Math.round(scrapBase / 8), 1, 3);
     dropRewardShards(run, "scrap", scrapBase, scrapPieces, enemy.x, enemy.y, isBoss ? 56 : 26);

@@ -142,6 +142,7 @@
         bestCombo: 0,
         bossKilled: false,
         scrapCollected: 0,
+        scrapSpent: 0,
         pickupsCollected: 0,
         supplyPodsOpened: 0,
         towersBuilt: 0
@@ -151,9 +152,9 @@
         cores: 0,
         renown: 0
       },
-      towerLimit: contract.missionType === "defense" ? 4 : contract.missionType === "escort" ? 4 : 3,
-      towerBaseCost: contract.missionType === "defense" ? 28 : contract.missionType === "escort" ? 30 : 34,
-      towerCostIncrement: 18,
+      baseTowerLimit: contract.missionType === "defense" ? 6 : contract.missionType === "escort" ? 6 : 5,
+      towerBaseCost: contract.missionType === "defense" ? 22 : contract.missionType === "escort" ? 24 : 26,
+      towerCostIncrement: 10,
       spawnState: {
         timer: 1.2,
         eliteTimer: 14,
@@ -465,8 +466,9 @@
         if (distance(node.x, node.y, run.player.x, run.player.y) < node.radius + run.player.radius) {
           node.collected = true;
           run.objective.collected += 1;
-          run.rewards.scrap += Math.round(18 * run.player.stats.scrapGain);
-          run.stats.scrapCollected += Math.round(18 * run.player.stats.scrapGain);
+          const salvageScrap = Math.round(12 * run.player.stats.scrapGain);
+          run.rewards.scrap += salvageScrap;
+          run.stats.scrapCollected += salvageScrap;
           const salvagePressure = clamp(run.objective.collected / Math.max(1, run.objective.total), 0, 1);
           spawnAmbientWave(run, 4.2 + run.contract.threat + salvagePressure * 1.4, true, {
             countMultiplier: 1.25,
@@ -1163,10 +1165,11 @@
   }
 
   function applyArchivedRelicsToRun(save, run) {
-    if (!save.relicArchive.relics.length) {
+    const activeEntries = getArchivedEchoesForShip(save, run.player.classId);
+    if (!activeEntries.length) {
       return;
     }
-    for (const entry of save.relicArchive.relics) {
+    for (const entry of activeEntries) {
       for (let stack = 0; stack < entry.stacks; stack += 1) {
         applyRelic(run, entry.id, { silent: true, isEcho: true, deferSynergy: true });
       }
@@ -1175,7 +1178,7 @@
     game.renderRelicStrip();
     game.pushNotification(
       "Echo Archive Linked",
-      save.relicArchive.relics.map((entry) => `${RELIC_MAP[entry.id].name}${entry.stacks > 1 ? ` x${entry.stacks}` : ""}`).join(", "),
+      activeEntries.map((entry) => `${RELIC_MAP[entry.id].name}${entry.stacks > 1 ? ` x${entry.stacks}` : ""}`).join(", "),
       "success"
     );
   }

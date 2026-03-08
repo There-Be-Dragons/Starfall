@@ -39,6 +39,7 @@
       signature: "Shield-breaching assault frame with fortress-grade plating.",
       desc: "Balanced combat exosuit armed with dual-rifles and a shield-breaking pulse.",
       weapon: "rifle",
+      relicSlots: 3,
       color: "#7cc8ff",
       unlockCost: { scrap: 0, cores: 0 },
       baseStats: {
@@ -69,6 +70,7 @@
       signature: "High-response pursuit craft tuned for burst movement and kill chains.",
       desc: "Fast evasive pilot with rapid-fire cannons and an overdrive combat mode.",
       weapon: "auto",
+      relicSlots: 3,
       color: "#84ffcf",
       unlockCost: { scrap: 0, cores: 0 },
       baseStats: {
@@ -99,6 +101,7 @@
       signature: "Siege chassis that anchors the field with layered fire support.",
       desc: "Heavy fortress platform that controls space with explosive slugs and protective bastions.",
       weapon: "cannon",
+      relicSlots: 4,
       color: "#ffc678",
       unlockCost: { scrap: 280, cores: 14 },
       baseStats: {
@@ -129,6 +132,7 @@
       signature: "Experimental arc vessel that bends the fight with drones and storm logic.",
       desc: "Experimental arc-caster frame that chains lightning and commands autonomous drones.",
       weapon: "arc",
+      relicSlots: 5,
       color: "#d78fff",
       unlockCost: { scrap: 430, cores: 24 },
       baseStats: {
@@ -321,7 +325,7 @@
       damage: 13,
       speed: 156,
       xp: 15,
-      scrap: 7,
+      scrap: 5,
       color: "#ff8268",
       behavior: "melee"
     },
@@ -333,7 +337,7 @@
       damage: 18,
       speed: 168,
       xp: 18,
-      scrap: 8,
+      scrap: 6,
       color: "#ffd27e",
       behavior: "charger"
     },
@@ -345,7 +349,7 @@
       damage: 15,
       speed: 134,
       xp: 18,
-      scrap: 8,
+      scrap: 6,
       color: "#8ec7ff",
       behavior: "ranged"
     },
@@ -357,7 +361,7 @@
       damage: 23,
       speed: 108,
       xp: 22,
-      scrap: 11,
+      scrap: 8,
       color: "#ffb872",
       behavior: "mortar"
     },
@@ -369,7 +373,7 @@
       damage: 12,
       speed: 204,
       xp: 16,
-      scrap: 6,
+      scrap: 4,
       color: "#72fff2",
       behavior: "skirmish"
     },
@@ -381,7 +385,7 @@
       damage: 13,
       speed: 108,
       xp: 24,
-      scrap: 12,
+      scrap: 9,
       color: "#b1a2ff",
       behavior: "support"
     },
@@ -393,7 +397,7 @@
       damage: 17,
       speed: 126,
       xp: 22,
-      scrap: 10,
+      scrap: 7,
       color: "#d78fff",
       behavior: "drain"
     }
@@ -526,6 +530,19 @@
         { scrap: 340, cores: 10 }
       ],
       currentText: (level) => `-${level * 6}% ability cooldown`
+    },
+    {
+      id: "fieldFabricators",
+      name: "Field Fabricators",
+      desc: "Increase tower deployments by 1, reduce tower deployment cooldown by 6%, and reduce tower Scrap cost by 4% per rank.",
+      maxLevel: 4,
+      costs: [
+        { scrap: 85, cores: 0 },
+        { scrap: 130, cores: 2 },
+        { scrap: 190, cores: 4 },
+        { scrap: 265, cores: 7 }
+      ],
+      currentText: (level) => `+${level} tower deploys, -${level * 6}% cooldown`
     },
     {
       id: "salvageRigs",
@@ -839,6 +856,18 @@
       maxStacks: 3,
       apply(game, run) {
         run.player.stats.healRegen += 2.25;
+      }
+    },
+    {
+      id: "forwardFoundry",
+      name: "Forward Foundry",
+      rarity: "rare",
+      desc: "+2 tower deployments, -18% tower deployment cooldown, and -12% tower Scrap cost.",
+      maxStacks: 1,
+      apply(game, run) {
+        run.player.stats.towerLimitBonus += 2;
+        run.player.stats.towerCooldown *= 0.82;
+        run.player.stats.towerCostMultiplier *= 0.88;
       }
     },
     {
@@ -1294,8 +1323,8 @@
       id: "systems",
       name: "Command Mesh",
       color: "#d6a4ff",
-      desc: "Accelerate abilities, recovery, and signal growth.",
-      upgrades: ["archiveDecoder", "salvageRigs", "abilityMatrix", "killTelemetry"]
+      desc: "Accelerate abilities, deployments, recovery, and signal growth.",
+      upgrades: ["archiveDecoder", "salvageRigs", "abilityMatrix", "fieldFabricators", "killTelemetry"]
     }
   ];
 
@@ -1333,6 +1362,9 @@
     "abilityFName",
     "abilityFBar",
     "abilityFLabel",
+    "towerAbilityName",
+    "towerAbilityBar",
+    "towerAbilityLabel",
     "continueButton",
     "menuStatusRow",
     "menuShipShowcase",

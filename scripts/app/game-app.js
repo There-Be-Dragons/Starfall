@@ -117,7 +117,7 @@
       },
       {
         title: "Ship Controls",
-        text: "`WASD` move, mouse aim, `LMB` fire, `Shift` dash, `Q/E/R/F` abilities, `T` deploy tower, `C` auto-fire, `Esc` pause."
+        text: "`WASD` move, mouse aim, `LMB` fire, `Shift` dash, `Q/E/R/F` abilities, `T` deploy tower, `C` auto-fire, `Esc` pause. Abilities and tower drops consume Scrap."
       }
     ];
     return notes;
@@ -1032,7 +1032,7 @@
       this.ui.metaCoreText.textContent = this.save.currencies.cores;
       this.ui.metaRenownText.textContent = this.save.currencies.renown;
       const selectedClass = CLASS_DATA[this.save.selectedClass];
-      this.ui.profileSummary.textContent = `${selectedClass.name} licensed. ${this.save.profile.contractsWon} victories, best threat ${romanThreat(this.save.profile.highestThreat)}, ${this.save.profile.bossesKilled} bosses destroyed, ${this.save.relicArchive.relics.length}/${this.save.relicArchive.capacity} echo slots filled.`;
+      this.ui.profileSummary.textContent = `${selectedClass.name} licensed. ${this.save.profile.contractsWon} victories, best threat ${romanThreat(this.save.profile.highestThreat)}, ${this.save.profile.bossesKilled} bosses destroyed, ${this.save.relicArchive.relics.length}/${this.save.relicArchive.capacity} archived echoes stored.`;
       this.renderMenuUI();
       this.renderClasses();
       this.renderZones();
@@ -1045,6 +1045,7 @@
 
     renderMenuUI() {
       const selectedClass = CLASS_DATA[this.save.selectedClass];
+      const activeEchoes = getArchivedEchoesForShip(this.save, selectedClass.id);
       this.ui.menuStatusRow.innerHTML = `
         <div class="resource-pill">Victories <strong>${this.save.profile.contractsWon}</strong></div>
         <div class="resource-pill">Best Threat <strong>${romanThreat(this.save.profile.highestThreat)}</strong></div>
@@ -1061,11 +1062,19 @@
             <p>${selectedClass.signature}</p>
           </div>
         </div>
+        <div class="ship-echo-panel">
+          <div class="selection-footer">
+            <span class="muted">Echo sockets wired into this frame</span>
+            <span class="tag">${activeEchoes.length}/${selectedClass.relicSlots} active</span>
+          </div>
+          ${renderShipEchoSlots(this.save, selectedClass.id)}
+        </div>
         <div class="tag-row">
           <span class="tag success">${selectedClass.role}</span>
           <span class="tag">Hull ${selectedClass.baseStats.maxHealth}</span>
           <span class="tag">Shield ${selectedClass.baseStats.maxShield}</span>
           <span class="tag">Speed ${Math.round(selectedClass.baseStats.moveSpeed)}</span>
+          <span class="tag">Echo Slots ${selectedClass.relicSlots}</span>
         </div>
       `;
       this.ui.menuProgressShowcase.innerHTML = `
@@ -1084,6 +1093,7 @@
         const unlocked = this.save.unlockedClasses.includes(classData.id);
         const selected = this.save.selectedClass === classData.id;
         const canBuy = canAfford(this.save, classData.unlockCost);
+        const activeEchoes = getArchivedEchoesForShip(this.save, classData.id);
         return `
           <div class="class-card ${selected ? "selected" : ""}">
             <div class="selection-footer">
@@ -1096,6 +1106,13 @@
                 <div class="muted">${classData.frameName}</div>
                 <div class="muted">${classData.manufacturer}</div>
               </div>
+            </div>
+            <div class="ship-echo-panel compact">
+              <div class="selection-footer">
+                <span class="muted">Echo sockets</span>
+                <span class="tag">${activeEchoes.length}/${classData.relicSlots}</span>
+              </div>
+              ${renderShipEchoSlots(this.save, classData.id, { compact: true })}
             </div>
             <p>${classData.desc}</p>
             <div class="stat-grid">
@@ -1354,7 +1371,7 @@
         this.ui.archiveList.innerHTML = `
           <div class="archive-card">
             <strong><span>No Echoes Stored</span><span class="tag">0/${archive.capacity}</span></strong>
-            <div class="archive-note">Win a contract and archive one relic from the run summary. Archived echoes automatically activate at the start of future deployments.</div>
+            <div class="archive-note">Win a contract and archive one relic from the run summary. Archived echoes automatically socket into ships at deployment, with advanced frames carrying more of them.</div>
           </div>
         `;
         return;
@@ -1597,8 +1614,10 @@
       this.ui.threatText.textContent = `${romanThreat(this.run.contract.threat)} • G${this.run.spawnState.gameLevel}`;
       this.ui.runScrapText.textContent = String(this.run.rewards.scrap);
       this.ui.runCoreText.textContent = String(this.run.rewards.cores);
-      const nextTowerCost = this.run.stats.towersBuilt >= this.run.towerLimit ? "-" : getTowerDeployCost(this.run);
-      this.ui.streakText.textContent = `${this.run.stats.towersBuilt}/${this.run.towerLimit} • ${nextTowerCost}`;
+      const towerLimit = getTowerDeployLimit(this.run);
+      const towerAtCap = this.run.stats.towersBuilt >= towerLimit;
+      const nextTowerCost = towerAtCap ? "-" : getTowerDeployCost(this.run);
+      this.ui.streakText.textContent = `${this.run.stats.towersBuilt}/${towerLimit} • ${towerAtCap ? "-" : `${nextTowerCost}S`}`;
       this.ui.dashCooldownBar.style.width = `${100 - (player.dashCooldownRemaining / player.stats.dashCooldown) * 100}%`;
       this.ui.dashLabel.textContent = player.dashCooldownRemaining > 0 ? `${player.dashCooldownRemaining.toFixed(1)}s` : "Ready";
       for (const slot of ABILITY_SLOT_ORDER) {
@@ -1607,14 +1626,27 @@
         const unlocked = isAbilityUnlocked(player, slot);
         const maxCooldown = getAbilityCooldownSeconds(player, slot);
         const current = player.abilityCooldowns[slot];
+        const scrapCost = getAbilityScrapCost(player, slot);
         this.ui[`ability${keyName}Name`].textContent = `${keyName} • ${def.name}`;
         this.ui[`ability${keyName}Bar`].style.width = unlocked
           ? `${100 - (current / Math.max(0.001, maxCooldown)) * 100}%`
           : "0%";
         this.ui[`ability${keyName}Label`].textContent = unlocked
-          ? current > 0 ? `${current.toFixed(1)}s` : "Ready"
-          : `Lvl ${def.unlockLevel}`;
+          ? current > 0 ? `${current.toFixed(1)}s • ${scrapCost}S` : this.run.rewards.scrap >= scrapCost ? `Ready • ${scrapCost}S` : `Need ${scrapCost}S`
+          : `Lvl ${def.unlockLevel} • ${scrapCost}S`;
       }
+      const towerCooldown = getTowerDeployCooldown(this.run);
+      this.ui.towerAbilityName.textContent = "T • Tower Deployment";
+      this.ui.towerAbilityBar.style.width = towerAtCap
+        ? "100%"
+        : `${100 - (player.towerCooldownRemaining / Math.max(0.001, towerCooldown)) * 100}%`;
+      this.ui.towerAbilityLabel.textContent = towerAtCap
+        ? `Cap ${this.run.stats.towersBuilt}/${towerLimit}`
+        : player.towerCooldownRemaining > 0
+          ? `${player.towerCooldownRemaining.toFixed(1)}s • ${nextTowerCost}S`
+          : this.run.rewards.scrap >= nextTowerCost
+            ? `Ready • ${nextTowerCost}S`
+            : `Need ${nextTowerCost}S`;
       this.ui.objectiveLabel.textContent = this.getObjectiveText();
     },
 
@@ -1824,7 +1856,9 @@
         <div class="summary-card"><span>Time</span><strong>${formatTime(this.run.time)}</strong></div>
         <div class="summary-card"><span>Best Streak</span><strong>${this.run.stats.bestCombo}</strong></div>
         <div class="summary-card"><span>Damage Done</span><strong>${Math.round(this.run.stats.damageDone)}</strong></div>
-        <div class="summary-card"><span>Scrap Found</span><strong>${this.run.rewards.scrap}</strong></div>
+        <div class="summary-card"><span>Scrap Collected</span><strong>${this.run.stats.scrapCollected}</strong></div>
+        <div class="summary-card"><span>Scrap Spent</span><strong>${this.run.stats.scrapSpent}</strong></div>
+        <div class="summary-card"><span>Scrap Banked</span><strong>${this.run.rewards.scrap}</strong></div>
         <div class="summary-card"><span>Pickups</span><strong>${this.run.stats.pickupsCollected}</strong></div>
         <div class="summary-card"><span>Supply Pods</span><strong>${this.run.stats.supplyPodsOpened}</strong></div>
         <div class="summary-card"><span>Extraction</span><strong>${victory ? (extracted ? "Secured" : "Missed") : "Failed"}</strong></div>

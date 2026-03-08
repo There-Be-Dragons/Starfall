@@ -197,6 +197,68 @@
     `;
   }
 
+  function getShipEchoSlotCount(classId) {
+    return CLASS_DATA[classId]?.relicSlots || 3;
+  }
+
+  function getRelicChipLabel(relicId) {
+    const relic = RELIC_MAP[relicId];
+    if (!relic) {
+      return "??";
+    }
+    const words = relic.name
+      .split(/\s+/)
+      .map((word) => word.replace(/[^A-Za-z0-9]/g, ""))
+      .filter(Boolean);
+    if (words.length >= 2) {
+      return `${words[0][0]}${words[1][0]}`.toUpperCase();
+    }
+    return words[0].slice(0, 2).toUpperCase();
+  }
+
+  function getRelicRarityColor(rarity) {
+    return {
+      common: "#8ec7ff",
+      rare: "#89ffd5",
+      legendary: "#ffd78f"
+    }[rarity] || "#d7e6ff";
+  }
+
+  function getArchivedEchoesForShip(save, classId) {
+    return (save?.relicArchive?.relics || [])
+      .slice()
+      .sort((left, right) => (right.updatedAt || 0) - (left.updatedAt || 0))
+      .slice(0, getShipEchoSlotCount(classId));
+  }
+
+  function renderShipEchoSlots(save, classId, options = {}) {
+    const slotCount = getShipEchoSlotCount(classId);
+    const entries = getArchivedEchoesForShip(save, classId);
+    const compact = Boolean(options.compact);
+    const sockets = Array.from({ length: slotCount }, (_, index) => {
+      const entry = entries[index];
+      if (!entry) {
+        return `
+          <div class="ship-echo-slot empty ${compact ? "compact" : ""}">
+            <strong>${compact ? "--" : "Empty"}</strong>
+            <span>${compact ? "Socket" : "Echo Socket"}</span>
+          </div>
+        `;
+      }
+      const relic = RELIC_MAP[entry.id];
+      const rarity = relic?.rarity || "common";
+      const meta = compact
+        ? `<strong>${getRelicChipLabel(entry.id)}</strong><span>${entry.stacks > 1 ? `x${entry.stacks}` : RARITY_TAG[rarity]}</span>`
+        : `<strong>${relic.name}</strong><span>${RARITY_TAG[rarity]}${entry.stacks > 1 ? ` x${entry.stacks}` : ""}</span>`;
+      return `
+        <div class="ship-echo-slot filled ${compact ? "compact" : ""}" style="--slot-accent:${getRelicRarityColor(rarity)}">
+          ${meta}
+        </div>
+      `;
+    });
+    return `<div class="ship-echo-slots ${compact ? "compact" : ""}">${sockets.join("")}</div>`;
+  }
+
   function deepMerge(target, source) {
     if (!source || typeof source !== "object") {
       return target;
@@ -229,7 +291,7 @@
       unlockedClasses: ["vanguard", "striker"],
       unlockedZones: ["scrapSea"],
       relicArchive: {
-        capacity: 3,
+        capacity: 5,
         relics: []
       },
       upgradeLevels: {},
@@ -280,6 +342,7 @@
       const parsed = JSON.parse(raw);
       const merged = deepMerge(base, parsed);
       merged.version = SAVE_VERSION;
+      merged.relicArchive.capacity = Math.max(base.relicArchive.capacity, merged.relicArchive.capacity || 0);
       return { save: merged, ok: true };
     } catch (error) {
       return { save: base, ok: false };
@@ -394,6 +457,9 @@
     stats.moveSpeed *= 1 + getUpgradeLevel(save, "burstThrusters") * 0.03;
     stats.dashCooldown *= 1 - getUpgradeLevel(save, "cooldownMesh") * 0.06;
     stats.abilityCooldown *= 1 - getUpgradeLevel(save, "abilityMatrix") * 0.06;
+    stats.towerLimitBonus += getUpgradeLevel(save, "fieldFabricators");
+    stats.towerCooldown *= 1 - getUpgradeLevel(save, "fieldFabricators") * 0.06;
+    stats.towerCostMultiplier *= 1 - getUpgradeLevel(save, "fieldFabricators") * 0.04;
     stats.scrapGain *= 1 + getUpgradeLevel(save, "salvageRigs") * 0.08;
     stats.xpGain *= 1 + getUpgradeLevel(save, "archiveDecoder") * 0.08;
     stats.armor += getUpgradeLevel(save, "reactivePlating") * 3;

@@ -179,8 +179,8 @@
     if (!run || !player) {
       return;
     }
+    const def = getAbilityDefinitionForClass(player.classId, slot);
     if (!isAbilityUnlocked(player, slot)) {
-      const def = getAbilityDefinitionForClass(player.classId, slot);
       if ((player.lockedAbilityHintAt || 0) + 1.5 < run.time) {
         player.lockedAbilityHintAt = run.time;
         game.pushNotification(`${ABILITY_SLOT_META[slot].key} Locked`, `${def.name} unlocks at level ${def.unlockLevel}.`, "warn");
@@ -195,6 +195,10 @@
     const target = getClampedPointerTarget(run, slot === "t" ? 560 : 420);
     const facing = angleTo(player.x, player.y, target.x, target.y);
     const damageBudget = getAbilityDamageBudget(run, slot);
+    const scrapCost = getAbilityScrapCost(player, slot);
+    if (!trySpendRunScrap(run, scrapCost, def.name)) {
+      return;
+    }
     player.abilityCooldowns[slot] = getAbilityCooldownSeconds(player, slot);
 
     if (player.classId === "vanguard") {
@@ -434,6 +438,7 @@
     player.facing = angleTo(player.x, player.y, game.pointer.worldX, game.pointer.worldY);
     player.fireCooldown = Math.max(0, player.fireCooldown - dt);
     player.dashCooldownRemaining = Math.max(0, player.dashCooldownRemaining - dt);
+    player.towerCooldownRemaining = Math.max(0, player.towerCooldownRemaining - dt);
     player.weaponFlash = Math.max(0, player.weaponFlash - dt * 7.5);
     player.damageFlash = Math.max(0, player.damageFlash - dt * 2.8);
     player.healFlash = Math.max(0, player.healFlash - dt * 2.2);
