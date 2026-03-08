@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 228 220" fill="none">
+  <defs>
+    <radialGradient id="shipGlow-oracle" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#d78fff" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#d78fff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="114" cy="110" r="92" fill="url(#shipGlow-oracle)"/>
+  <path d="M62 110L98 58L144 58L176 110L144 162L98 162Z" fill="#080e1b" fill-opacity="0.95" stroke="#d78fff" stroke-width="6"/>
+  <circle cx="118" cy="110" r="22" fill="#d78fff" fill-opacity="0.22" stroke="#d78fff" stroke-width="5"/>
+</svg>

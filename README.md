@@ -1,5 +1,7 @@
 # Starfall Salvage
 
+<p align="center"><img src="assets/logo.svg" alt="Starfall Salvage logo banner" width="900"></p>
+
 `Starfall Salvage` is a self-contained browser action roguelite built with plain `HTML`, `CSS`, and `JavaScript`.
 
 ## Run
@@ -85,7 +87,11 @@ Every contract mixes mission type, zone, threat, and optional mutators.
 
 Each ship has its own manufacturer, frame identity, weapon family, role, and four-slot ability kit.
 
+Ship previews below use the same silhouettes and class colors as the in-game class cards.
+
 ### `Vanguard`
+
+<p><img src="assets/ships/vanguard.svg" alt="Vanguard in-game class card preview" width="156"></p>
 
 - Frame: `VX-11 Bastion`
 - Manufacturer: `Argent Yard`
@@ -101,6 +107,8 @@ Each ship has its own manufacturer, frame identity, weapon family, role, and fou
 
 ### `Striker`
 
+<p><img src="assets/ships/striker.svg" alt="Striker in-game class card preview" width="156"></p>
+
 - Frame: `SR-7 Raptor`
 - Manufacturer: `Halcyon Rushworks`
 - Role: `Skirmish Ace`
@@ -115,6 +123,8 @@ Each ship has its own manufacturer, frame identity, weapon family, role, and fou
 
 ### `Warden`
 
+<p><img src="assets/ships/warden.svg" alt="Warden in-game class card preview" width="156"></p>
+
 - Frame: `WDN-3 Bulwark`
 - Manufacturer: `Anchor Forge`
 - Role: `Siege Bulwark`
@@ -128,6 +138,8 @@ Each ship has its own manufacturer, frame identity, weapon family, role, and fou
 - `F` `Cataclysm Core`: siege shockwave detonation
 
 ### `Oracle`
+
+<p><img src="assets/ships/oracle.svg" alt="Oracle in-game class card preview" width="156"></p>
 
 - Frame: `ORC-9 Choir`
 - Manufacturer: `Lattice Veil`
