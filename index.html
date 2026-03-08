@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Starfall Salvage</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <canvas id="gameCanvas" aria-label="Starfall Salvage game canvas"></canvas>
+    <div id="hud" class="hud hidden">
+      <div class="hud-row hud-top-row">
+        <div class="status-card wide hud-vitals-card">
+          <div class="label-line">
+            <span id="playerNameLabel">Vanguard</span>
+            <span id="zoneLabel">Scrap Sea</span>
+          </div>
+          <div class="bar-shell">
+            <div class="bar-fill health" id="healthBar"></div>
+          </div>
+          <div class="bar-shell">
+            <div class="bar-fill shield" id="shieldBar"></div>
+          </div>
+          <div class="label-line small">
+            <span id="healthText">Health 0 / 0</span>
+            <span id="shieldText">Shield 0 / 0</span>
+          </div>
+        </div>
+        <div class="status-card hud-mini-card">
+          <div class="card-title">Run</div>
+          <div class="stat-line"><span>Level</span><strong id="levelText">1</strong></div>
+          <div class="bar-shell compact">
+            <div class="bar-fill xp" id="xpBar"></div>
+          </div>
+          <div class="stat-line"><span>XP</span><strong id="xpText">0 / 100</strong></div>
+        </div>
+        <div class="status-card hud-mini-card">
+          <div class="card-title">Mission</div>
+          <div class="stat-line"><span>Objective</span><strong id="objectiveLabel">-</strong></div>
+          <div class="stat-line"><span>Elapsed</span><strong id="timerText">00:00</strong></div>
+          <div class="stat-line"><span>Threat</span><strong id="threatText">I</strong></div>
+        </div>
+        <div class="status-card hud-mini-card">
+          <div class="card-title">Systems</div>
+          <div class="stat-line"><span>Scrap</span><strong id="runScrapText">0</strong></div>
+          <div class="stat-line"><span>Core Fragments</span><strong id="runCoreText">0</strong></div>
+          <div class="stat-line"><span>Towers</span><strong id="streakText">0 / 0</strong></div>
+        </div>
+      </div>
+      <div class="hud-row hud-bottom-row">
+        <div class="status-card wide hud-relic-card">
+          <div class="card-title">Relics</div>
+          <div id="relicStrip" class="relic-strip"></div>
+        </div>
+        <div class="status-card ability-card hud-ability-card">
+          <div class="card-title">Abilities</div>
+          <div class="ability-line">
+            <div>
+              <div class="mini-label">Dash</div>
+              <div class="cooldown-shell"><div class="cooldown-fill" id="dashCooldownBar"></div></div>
+            </div>
+            <strong id="dashLabel">Ready</strong>
+          </div>
+          <div class="ability-line">
+            <div>
+              <div class="mini-label" id="abilityQName">Q Ability</div>
+              <div class="cooldown-shell"><div class="cooldown-fill active" id="abilityQBar"></div></div>
+            </div>
+            <strong id="abilityQLabel">Ready</strong>
+          </div>
+          <div class="ability-line">
+            <div>
+              <div class="mini-label" id="abilityEName">E Ability</div>
+              <div class="cooldown-shell"><div class="cooldown-fill active" id="abilityEBar"></div></div>
+            </div>
+            <strong id="abilityELabel">Locked</strong>
+          </div>
+          <div class="ability-line">
+            <div>
+              <div class="mini-label" id="abilityRName">R Ability</div>
+              <div class="cooldown-shell"><div class="cooldown-fill active" id="abilityRBar"></div></div>
+            </div>
+            <strong id="abilityRLabel">Locked</strong>
+          </div>
+          <div class="ability-line">
+            <div>
+              <div class="mini-label" id="abilityFName">F Ability</div>
+              <div class="cooldown-shell"><div class="cooldown-fill active" id="abilityFBar"></div></div>
+            </div>
+            <strong id="abilityFLabel">Locked</strong>
+          </div>
+          <div class="mini-help">`WASD` move, `LMB` fire, `Shift` dash, `Q/E/R/F` abilities, `T` tower, `C` auto-fire, `Esc` pause</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="notificationStack" class="notification-stack"></div>
+
+    <section id="screen-menu" class="screen active">
+      <div class="panel hero-panel">
+        <img class="logo" src="assets/logo.svg" alt="Starfall Salvage logo">
+        <p class="lead">
+          Salvage the wreckage of fallen star fleets, crush war machines, and rebuild Haven Port one contract at a time.
+        </p>
+        <div id="menuStatusRow" class="menu-status-row"></div>
+        <div class="menu-showcase">
+          <div id="menuShipShowcase" class="menu-showcase-card"></div>
+          <div id="menuProgressShowcase" class="menu-showcase-card"></div>
+        </div>
+        <div class="hero-grid">
+          <div class="hero-card">
+            <div class="hero-title">Action Roguelite</div>
+            <p>Procedural combat runs with elite hunts, defense contracts, bosses, relic drafts, and meta progression.</p>
+          </div>
+          <div class="hero-card">
+            <div class="hero-title">Long-Term Progression</div>
+            <p>Unlock classes, zones, permanent upgrades, achievements, escalating threat tiers, and endless replay value.</p>
+          </div>
+          <div class="hero-card">
+            <div class="hero-title">Self-Contained</div>
+            <p>Runs entirely in the browser with original vector art and generated visuals. No installs or placeholders.</p>
+          </div>
+        </div>
+        <div class="button-row">
+          <button class="primary" data-action="new-game">New Campaign</button>
+          <button data-action="continue-game" id="continueButton">Continue</button>
+          <button data-action="open-help">How To Play</button>
+          <button data-action="open-options">Options</button>
+          <a
+            class="button-link support-link"
+            href="https://buymeacoffee.com/whiskeytanj"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Support This Game
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-hub" class="screen">
+      <div class="panel hub-panel">
+        <div class="panel-header">
+          <div>
+            <h1>Haven Port Command</h1>
+            <p id="profileSummary">Build your roster, purchase upgrades, and deploy for the next contract.</p>
+          </div>
+          <div class="resource-strip">
+            <div class="resource-pill">Scrap <strong id="metaScrapText">0</strong></div>
+            <div class="resource-pill">Core Shards <strong id="metaCoreText">0</strong></div>
+            <div class="resource-pill">Renown <strong id="metaRenownText">0</strong></div>
+          </div>
+        </div>
+
+        <div class="hub-grid">
+          <div class="hub-column">
+            <div class="subpanel">
+              <div class="subpanel-title">Crew License</div>
+              <div id="classList" class="card-list"></div>
+            </div>
+            <div class="subpanel">
+              <div class="subpanel-title">Zone Clearance</div>
+              <div id="zoneList" class="card-list"></div>
+            </div>
+          </div>
+
+          <div class="hub-column wide">
+            <div class="subpanel">
+              <div class="subpanel-title">Contract Board</div>
+              <div class="toolbar">
+                <button data-action="refresh-contracts">Refresh Contracts</button>
+                <span class="muted">Threat climbs as your victories stack. Contracts roll unique mutators and rewards.</span>
+              </div>
+              <div id="contractBoard" class="contract-board"></div>
+            </div>
+          </div>
+
+          <div class="hub-column">
+            <div class="subpanel">
+              <div class="toolbar section-head">
+                <div>
+                  <div class="subpanel-title">Spec Readout</div>
+                  <div class="archive-note">See your current build at a glance, then open the full talent grid to train more ranks.</div>
+                </div>
+                <button data-action="open-talents">Talent Tree</button>
+              </div>
+              <div id="upgradeList" class="card-list"></div>
+            </div>
+            <div class="subpanel">
+              <div class="subpanel-title">Echo Archive</div>
+              <div id="archiveList" class="card-list"></div>
+            </div>
+            <div class="subpanel">
+              <div class="subpanel-title">Achievements</div>
+              <div id="achievementList" class="achievement-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="button-row align-end">
+          <button data-action="return-menu">Main Menu</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-talents" class="screen">
+      <div class="panel talent-panel">
+        <div class="panel-header">
+          <div>
+            <h1>Foundry Talent Grid</h1>
+            <p class="lead compact">Train permanent upgrades in a full-screen tree, with every branch visible side by side.</p>
+          </div>
+          <div id="talentStatusRow" class="resource-strip"></div>
+        </div>
+        <div id="talentTreeView" class="talent-tree-view"></div>
+        <div class="button-row align-end">
+          <button data-action="return-hub">Back To Haven Port</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-levelup" class="screen modal-screen">
+      <div class="panel modal-panel">
+        <h2>Signal Cache Recovered</h2>
+        <p class="lead compact">Choose a relic upgrade for this run.</p>
+        <div id="levelUpChoices" class="choice-grid"></div>
+      </div>
+    </section>
+
+    <section id="screen-pause" class="screen modal-screen">
+      <div class="panel modal-panel small">
+        <h2>Mission Paused</h2>
+        <div class="button-column">
+          <button class="primary" data-action="resume-game">Resume</button>
+          <button data-action="open-help">Controls</button>
+          <button data-action="open-options">Options</button>
+          <button data-action="abandon-run">Abandon Contract</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-summary" class="screen modal-screen">
+      <div class="panel modal-panel">
+        <h2 id="summaryTitle">Contract Complete</h2>
+        <p id="summaryLead" class="lead compact"></p>
+        <div id="summaryStats" class="summary-grid"></div>
+        <div id="summaryRewards" class="reward-strip"></div>
+        <div class="subpanel">
+          <div id="summaryArchiveTitle" class="subpanel-title">Echo Archive</div>
+          <div id="summaryArchiveChoices" class="choice-grid"></div>
+        </div>
+        <div class="button-row">
+          <button class="primary" data-action="return-hub">Back To Haven Port</button>
+          <button data-action="start-same-class">Run It Back</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-options" class="screen modal-screen">
+      <div class="panel modal-panel small">
+        <h2>Options</h2>
+        <div class="form-grid">
+          <label class="toggle-row">
+            <input id="optionMuteAudio" type="checkbox">
+            <span>Mute All Audio</span>
+          </label>
+          <label>
+            Master Volume
+            <input id="optionMasterVolume" type="range" min="0" max="100" step="1">
+          </label>
+          <label>
+            Sound Effects Volume
+            <input id="optionSfxVolume" type="range" min="0" max="100" step="1">
+          </label>
+          <label>
+            Music Volume
+            <input id="optionMusicVolume" type="range" min="0" max="100" step="1">
+          </label>
+          <label>
+            Screen Shake
+            <input id="optionScreenShake" type="range" min="0" max="100" step="1">
+          </label>
+          <label class="toggle-row">
+            <input id="optionParticles" type="checkbox">
+            <span>High Particle Density</span>
+          </label>
+          <label class="toggle-row">
+            <input id="optionDefaultAutoFire" type="checkbox">
+            <span>Enable Auto-Fire On New Runs</span>
+          </label>
+        </div>
+        <div class="button-row">
+          <button class="primary" data-action="save-options">Save</button>
+          <button data-action="close-modal">Close</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-help" class="screen modal-screen">
+      <div class="panel modal-panel">
+        <h2>How To Play</h2>
+        <div class="help-grid">
+          <div class="help-card">
+            <h3>Mission Flow</h3>
+            <p>Choose a contract in Haven Port, clear the mission objective, defeat the zone boss, and extract for rewards.</p>
+          </div>
+          <div class="help-card">
+            <h3>Loot Vacuum</h3>
+            <p>Enemies spill Scrap, XP, Core Shards, and recovery cells. You have to get fairly close to pull loot in, unless a special buff or magnet effect is active.</p>
+          </div>
+          <div class="help-card">
+            <h3>Controls</h3>
+            <p>`WASD` move, mouse aim, `LMB` fire, `Shift` dash, `Q/E/R/F` abilities, `T` deploy a tower, `C` toggle auto-fire, `Esc` pause.</p>
+          </div>
+          <div class="help-card">
+            <h3>Progression</h3>
+            <p>Level up during runs to draft relics. Spend Scrap and Core Shards in the hub on permanent upgrades, classes, and new zones.</p>
+          </div>
+          <div class="help-card">
+            <h3>Supply Pods</h3>
+            <p>Combat performance and time in-zone call down supply pods that grant repairs, loot caches, temporary overclocks, or a powerful magnet field.</p>
+          </div>
+          <div class="help-card">
+            <h3>Transient Relays</h3>
+            <p>Some maps phase in paired teleporters for short windows. Step into one active gate to jump to the other end before the relay vanishes and relocates.</p>
+          </div>
+          <div class="help-card">
+            <h3>Echo Archive</h3>
+            <p>Victorious runs can preserve one relic as an Echo. Archived relics automatically spin up at the start of later contracts, up to archive capacity.</p>
+          </div>
+          <div class="help-card">
+            <h3>Threat & Mutators</h3>
+            <p>Higher threat contracts spawn stronger enemies and extra mutators, but the rewards scale sharply.</p>
+          </div>
+        </div>
+        <div class="button-row">
+          <button class="primary" data-action="close-modal">Close</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="game.js" defer></script>
+</body>
+</html>
