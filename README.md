@@ -18,6 +18,8 @@ It is built with plain `HTML`, `CSS`, and `JavaScript` and runs directly in the 
 
 ## Running the Game
 
+Play it online at [starfall.azurewebsites.net](https://starfall.azurewebsites.net/).
+
 Open `index.html` in a browser.
 
 ## Controls
