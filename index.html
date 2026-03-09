@@ -174,48 +174,101 @@
           </div>
         </div>
 
-        <div class="hub-grid">
-          <div class="hub-column">
-            <div class="subpanel">
-              <div class="subpanel-title">Crew License</div>
-              <div id="classList" class="card-list"></div>
+        <div class="hub-shell">
+          <div class="hub-page active" data-hub-page="overview">
+            <div class="hub-overview-head">
+              <div>
+                <div class="subpanel-title">Port Sections</div>
+                <p class="archive-note">Choose a focused section instead of browsing one crowded board. Each panel opens its own page with room for details and actions.</p>
+              </div>
             </div>
-            <div class="subpanel">
-              <div class="subpanel-title">Zone Clearance</div>
-              <div id="zoneList" class="card-list"></div>
-            </div>
+            <div id="hubOverviewGrid" class="hub-overview-grid"></div>
           </div>
 
-          <div class="hub-column wide">
-            <div class="subpanel">
-              <div class="subpanel-title">Contract Board</div>
+          <div class="hub-page" data-hub-page="deployment">
+            <div class="hub-page-head">
+              <div class="hub-page-head-main">
+                <button data-action="hub-back">Back</button>
+                <div>
+                  <div class="subpanel-title">Deployment</div>
+                  <p class="archive-note">Review your current ship, open contracts, and sector readiness before insertion.</p>
+                </div>
+              </div>
               <div class="toolbar">
                 <button data-action="refresh-contracts">Refresh Contracts</button>
-                <span class="muted">Threat climbs as your victories stack. Contracts roll unique mutators and rewards.</span>
               </div>
-              <div id="contractBoard" class="contract-board"></div>
             </div>
+            <div id="deploymentSummary" class="summary-grid hub-summary-grid"></div>
+            <div id="contractBoard" class="contract-board"></div>
           </div>
 
-          <div class="hub-column">
-            <div class="subpanel">
-              <div class="toolbar section-head">
+          <div class="hub-page" data-hub-page="ships">
+            <div class="hub-page-head">
+              <div class="hub-page-head-main">
+                <button data-action="hub-back">Back</button>
+                <div>
+                  <div class="subpanel-title">Ship Selection</div>
+                  <p class="archive-note">Pick a frame, compare role and stats, and check each hull's archived Echo capacity.</p>
+                </div>
+              </div>
+            </div>
+            <div id="classList" class="card-list"></div>
+          </div>
+
+          <div class="hub-page" data-hub-page="zones">
+            <div class="hub-page-head">
+              <div class="hub-page-head-main">
+                <button data-action="hub-back">Back</button>
+                <div>
+                  <div class="subpanel-title">Zone Clearance</div>
+                  <p class="archive-note">Track what sectors are unlocked and purchase the next clearance when your resources allow it.</p>
+                </div>
+              </div>
+            </div>
+            <div id="zoneSummary" class="summary-grid hub-summary-grid"></div>
+            <div id="zoneList" class="card-list"></div>
+          </div>
+
+          <div class="hub-page" data-hub-page="spec">
+            <div class="hub-page-head">
+              <div class="hub-page-head-main">
+                <button data-action="hub-back">Back</button>
                 <div>
                   <div class="subpanel-title">Spec Readout</div>
-                  <div class="archive-note">See your current build at a glance, then open the full talent grid to train more ranks.</div>
+                  <p class="archive-note">See your current build at a glance, then open the full talent grid to train more ranks.</p>
                 </div>
+              </div>
+              <div class="toolbar">
                 <button data-action="open-talents">Talent Tree</button>
               </div>
-              <div id="upgradeList" class="card-list"></div>
             </div>
-            <div class="subpanel">
-              <div class="subpanel-title">Echo Archive</div>
-              <div id="archiveList" class="card-list"></div>
+            <div id="upgradeList" class="card-list"></div>
+          </div>
+
+          <div class="hub-page" data-hub-page="archive">
+            <div class="hub-page-head">
+              <div class="hub-page-head-main">
+                <button data-action="hub-back">Back</button>
+                <div>
+                  <div class="subpanel-title">Echo Archive</div>
+                  <p class="archive-note">Stored relics auto-socket into ships at deployment. Review capacity and current reserve here.</p>
+                </div>
+              </div>
             </div>
-            <div class="subpanel">
-              <div class="subpanel-title">Achievements</div>
-              <div id="achievementList" class="achievement-list"></div>
+            <div id="archiveList" class="card-list"></div>
+          </div>
+
+          <div class="hub-page" data-hub-page="achievements">
+            <div class="hub-page-head">
+              <div class="hub-page-head-main">
+                <button data-action="hub-back">Back</button>
+                <div>
+                  <div class="subpanel-title">Achievements</div>
+                  <p class="archive-note">Monitor milestones, current progress, and resource rewards tied to long-term play.</p>
+                </div>
+              </div>
             </div>
+            <div id="achievementList" class="achievement-list"></div>
           </div>
         </div>
 

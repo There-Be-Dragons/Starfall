@@ -94,6 +94,8 @@
     return "Stay mobile, secure drops between engagements, and thin the most dangerous pressure sources first.";
   }
 
+  const HUB_PAGE_ORDER = ["overview", "deployment", "ships", "zones", "spec", "archive", "achievements"];
+
   function getMissionBriefingNotes(run) {
     const mutatorText = run.contract.mutators.length
       ? run.contract.mutators.map((id) => `${MUTATORS[id].name}: ${MUTATORS[id].desc}`).join(" ")
@@ -279,6 +281,7 @@
     height: 0,
     dpr: 1,
     mode: "menu",
+    hubPage: "overview",
     activeModal: null,
     modalReturnTo: null,
     save: null,
@@ -422,6 +425,11 @@
 
       document.body.addEventListener("click", (event) => {
         this.primeAudio();
+        const hubPageTarget = event.target.closest("[data-hub-page-target]");
+        if (hubPageTarget) {
+          this.openHubPage(hubPageTarget.dataset.hubPageTarget);
+          return;
+        }
         const actionElement = event.target.closest("[data-action]");
         if (actionElement) {
           this.handleAction(actionElement.dataset.action);
@@ -855,7 +863,11 @@
         return;
       }
       if (this.mode === "talents") {
-        this.showHub();
+        this.showHub("spec");
+        return;
+      }
+      if (this.mode === "hub" && this.hubPage !== "overview") {
+        this.openHubPage("overview");
         return;
       }
       if (this.mode === "mission") {
@@ -870,7 +882,7 @@
           break;
         case "continue-game":
           if (this.save.started) {
-            this.showHub();
+            this.showHub("overview");
           }
           break;
         case "open-help":
@@ -894,7 +906,11 @@
           this.generateContracts();
           break;
         case "open-talents":
+          this.hubPage = "spec";
           this.showTalents();
+          break;
+        case "hub-back":
+          this.openHubPage("overview");
           break;
         case "return-menu":
           this.activeModal = null;
@@ -911,7 +927,7 @@
           }
           break;
         case "return-hub":
-          this.showHub();
+          this.showHub(this.mode === "talents" ? "spec" : "overview");
           break;
         case "start-same-class":
           this.quickRestart();
@@ -995,7 +1011,7 @@
       this.saveGame();
     },
 
-    showHub() {
+    showHub(page = "overview") {
       if (!this.save.started) {
         this.save.started = true;
       }
@@ -1003,12 +1019,25 @@
         this.generateContracts();
       }
       this.mode = "hub";
+      this.hubPage = HUB_PAGE_ORDER.includes(page) ? page : "overview";
       this.activeModal = null;
       this.modalReturnTo = null;
       this.run = null;
       this.renderHub();
       this.refreshScreens();
       this.saveGame();
+    },
+
+    refreshHubPages() {
+      const activePage = HUB_PAGE_ORDER.includes(this.hubPage) ? this.hubPage : "overview";
+      for (const page of document.querySelectorAll("[data-hub-page]")) {
+        page.classList.toggle("active", page.dataset.hubPage === activePage);
+      }
+    },
+
+    openHubPage(page = "overview") {
+      this.hubPage = HUB_PAGE_ORDER.includes(page) ? page : "overview";
+      this.refreshHubPages();
     },
 
     showTalents() {
@@ -1040,7 +1069,177 @@
       this.renderArchive();
       this.renderContracts();
       this.renderAchievements();
+      this.renderDeploymentSummary();
+      this.renderZoneSummary();
+      this.renderHubOverview();
+      this.refreshHubPages();
       this.updateContinueButton();
+    },
+
+    renderHubOverview() {
+      const selectedClass = CLASS_DATA[this.save.selectedClass];
+      const selectedEchoes = getArchivedEchoesForShip(this.save, selectedClass.id);
+      const unlockedZones = getUnlockedZoneOrder(this.save);
+      const activeZone = ZONE_DATA[unlockedZones[unlockedZones.length - 1]];
+      const branchStates = UPGRADE_BRANCHES.map((branch) => getUpgradeBranchState(this.save, branch));
+      const focusBranch = branchStates.reduce((best, state) => (state.points > best.points ? state : best), branchStates[0]);
+      const totalRanks = getTotalUpgradeRanks(this.save);
+      const maxRanks = getMaxUpgradeRanks();
+      const archive = this.save.relicArchive;
+      const achievementsUnlocked = ACHIEVEMENTS.filter((achievement) => Boolean(this.save.achievements[achievement.id])).length;
+      const highestContractThreat = this.contracts.reduce((highest, contract) => Math.max(highest, contract.threat), 0);
+      const specMeters = branchStates
+        .slice()
+        .sort((left, right) => right.points - left.points)
+        .map((state) => `
+          <div class="hub-card-meter">
+            <div class="hub-card-meter-head">
+              <span>${state.branch.name}</span>
+              <strong>${state.points}/${state.maxPoints}</strong>
+            </div>
+            <div class="hub-card-meter-shell">
+              <div class="hub-card-meter-fill" style="width:${state.completion * 100}%; --branch-color:${state.branch.color}"></div>
+            </div>
+          </div>
+        `).join("");
+
+      this.ui.hubOverviewGrid.innerHTML = `
+        <button class="hub-nav-card featured" type="button" data-hub-page-target="deployment">
+          <div class="hub-nav-card-head">
+            <span class="tag success">Ready</span>
+            <span class="hub-nav-arrow">Open</span>
+          </div>
+          <div class="hub-nav-card-copy">
+            <strong>Deployment</strong>
+            <p>${this.contracts.length} contracts are live with threat readings up to ${romanThreat(highestContractThreat || 1)}.</p>
+          </div>
+          <div class="hub-nav-card-stats">
+            <div class="hub-stat-chip"><span>Ship</span><strong>${selectedClass.name}</strong></div>
+            <div class="hub-stat-chip"><span>Zones</span><strong>${unlockedZones.length}/${Object.keys(ZONE_DATA).length}</strong></div>
+            <div class="hub-stat-chip"><span>Echoes</span><strong>${selectedEchoes.length}/${selectedClass.relicSlots}</strong></div>
+          </div>
+        </button>
+
+        <button class="hub-nav-card" type="button" data-hub-page-target="ships">
+          <div class="hub-nav-card-head">
+            <span class="tag">${selectedClass.role}</span>
+            <span class="hub-nav-arrow">Open</span>
+          </div>
+          <div class="hub-ship-preview">
+            ${getShipPreviewSvg(selectedClass.id)}
+          </div>
+          <div class="hub-nav-card-copy">
+            <strong>Ship Selection</strong>
+            <p>${selectedClass.name} is active. Compare frames, role fit, and Echo sockets before deployment.</p>
+          </div>
+        </button>
+
+        <button class="hub-nav-card" type="button" data-hub-page-target="zones">
+          <div class="hub-nav-card-head">
+            <span class="tag">${unlockedZones.length} unlocked</span>
+            <span class="hub-nav-arrow">Open</span>
+          </div>
+          <div class="hub-nav-card-copy">
+            <strong>Zone Clearance</strong>
+            <p>${activeZone ? `${activeZone.name} is your current highest clearance.` : "Review sector progression and unlock the next region."}</p>
+          </div>
+          <div class="hub-nav-card-stats">
+            <div class="hub-stat-chip"><span>Bosses</span><strong>${this.save.profile.bossesKilled}</strong></div>
+            <div class="hub-stat-chip"><span>Threat</span><strong>${romanThreat(this.save.profile.highestThreat)}</strong></div>
+          </div>
+        </button>
+
+        <button class="hub-nav-card" type="button" data-hub-page-target="spec">
+          <div class="hub-nav-card-head">
+            <span class="tag warn">Spec</span>
+            <span class="hub-nav-arrow">Open</span>
+          </div>
+          <div class="hub-nav-card-copy">
+            <strong>Spec Readout</strong>
+            <p>${totalRanks > 0 ? `${focusBranch.branch.name} is your strongest lane right now.` : "No trained ranks yet. Open the tree to define your build."}</p>
+          </div>
+          <div class="hub-card-meter-list">
+            ${specMeters}
+          </div>
+          <div class="hub-nav-card-stats">
+            <div class="hub-stat-chip"><span>Ranks</span><strong>${totalRanks}/${maxRanks}</strong></div>
+          </div>
+        </button>
+
+        <button class="hub-nav-card" type="button" data-hub-page-target="archive">
+          <div class="hub-nav-card-head">
+            <span class="tag">${archive.relics.length}/${archive.capacity}</span>
+            <span class="hub-nav-arrow">Open</span>
+          </div>
+          <div class="hub-nav-card-copy">
+            <strong>Echo Archive</strong>
+            <p>${archive.relics.length ? "Stored relics are ready to auto-socket into the next deployment." : "No Echoes stored yet. Successful extractions let you preserve relics here."}</p>
+          </div>
+        </button>
+
+        <button class="hub-nav-card" type="button" data-hub-page-target="achievements">
+          <div class="hub-nav-card-head">
+            <span class="tag success">${achievementsUnlocked}/${ACHIEVEMENTS.length}</span>
+            <span class="hub-nav-arrow">Open</span>
+          </div>
+          <div class="hub-nav-card-copy">
+            <strong>Achievements</strong>
+            <p>Track long-term milestones, pending rewards, and overall campaign completion.</p>
+          </div>
+        </button>
+      `;
+    },
+
+    renderDeploymentSummary() {
+      const selectedClass = CLASS_DATA[this.save.selectedClass];
+      const unlockedZones = getUnlockedZoneOrder(this.save);
+      const highestThreat = this.contracts.reduce((highest, contract) => Math.max(highest, contract.threat), 0);
+      const archiveLoadout = getArchivedEchoesForShip(this.save, selectedClass.id).length;
+      this.ui.deploymentSummary.innerHTML = `
+        <div class="summary-card">
+          <span>Selected Ship</span>
+          <strong>${selectedClass.name}</strong>
+          <div class="archive-note">${selectedClass.role} frame • ${selectedClass.signature}</div>
+        </div>
+        <div class="summary-card">
+          <span>Available Contracts</span>
+          <strong>${this.contracts.length}</strong>
+          <div class="archive-note">Current board peaks at threat ${romanThreat(highestThreat || 1)}.</div>
+        </div>
+        <div class="summary-card">
+          <span>Sector Readiness</span>
+          <strong>${unlockedZones.length}/${Object.keys(ZONE_DATA).length}</strong>
+          <div class="archive-note">Unlocked clearances determine which zones can appear on the board.</div>
+        </div>
+        <div class="summary-card">
+          <span>Echo Loadout</span>
+          <strong>${archiveLoadout}/${selectedClass.relicSlots}</strong>
+          <div class="archive-note">Archived relics will auto-socket into this hull at deployment.</div>
+        </div>
+      `;
+    },
+
+    renderZoneSummary() {
+      const unlockedZones = getUnlockedZoneOrder(this.save);
+      const highestZone = ZONE_DATA[unlockedZones[unlockedZones.length - 1]];
+      const lockedCount = Math.max(0, Object.keys(ZONE_DATA).length - unlockedZones.length);
+      this.ui.zoneSummary.innerHTML = `
+        <div class="summary-card">
+          <span>Unlocked Zones</span>
+          <strong>${unlockedZones.length}/${Object.keys(ZONE_DATA).length}</strong>
+          <div class="archive-note">Each clearance expands the contract pool and boss roster.</div>
+        </div>
+        <div class="summary-card">
+          <span>Highest Clearance</span>
+          <strong>${highestZone ? highestZone.name : "None"}</strong>
+          <div class="archive-note">${highestZone ? highestZone.desc : "Unlock your first zone to begin taking contracts."}</div>
+        </div>
+        <div class="summary-card">
+          <span>Zones Remaining</span>
+          <strong>${lockedCount}</strong>
+          <div class="archive-note">Spend Scrap and Core Shards to secure the next route.</div>
+        </div>
+      `;
     },
 
     renderMenuUI() {
@@ -1437,6 +1636,8 @@
       }
       this.contracts = cards;
       this.renderContracts();
+      this.renderDeploymentSummary();
+      this.renderHubOverview();
     },
 
     renderContracts() {

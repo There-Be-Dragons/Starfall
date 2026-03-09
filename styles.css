@@ -193,6 +193,179 @@ button:disabled {
   width: min(1440px, 100%);
 }
 
+.hub-shell {
+  min-height: 0;
+}
+
+.hub-page {
+  display: none;
+  gap: 1rem;
+}
+
+.hub-page.active {
+  display: grid;
+}
+
+.hub-overview-head,
+.hub-page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.hub-page-head-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.hub-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.hub-nav-card {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 0.9rem;
+  min-height: 220px;
+  padding: 1.15rem;
+  text-align: left;
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(18, 30, 57, 0.96), rgba(9, 16, 32, 0.94)),
+    radial-gradient(circle at top right, rgba(121, 181, 255, 0.12), transparent 40%);
+  border: 1px solid rgba(121, 181, 255, 0.16);
+}
+
+.hub-nav-card.featured {
+  grid-column: span 2;
+  background:
+    linear-gradient(180deg, rgba(31, 61, 112, 0.98), rgba(15, 29, 58, 0.96)),
+    radial-gradient(circle at top right, rgba(145, 226, 255, 0.18), transparent 42%);
+  border-color: rgba(145, 226, 255, 0.22);
+}
+
+.hub-nav-card-head,
+.hub-card-meter-head,
+.hub-nav-card-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.hub-nav-card-copy {
+  display: grid;
+  gap: 0.45rem;
+  align-content: start;
+}
+
+.hub-nav-card-copy strong {
+  font-size: 1.12rem;
+  color: #f2fbff;
+}
+
+.hub-nav-card-copy p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.hub-nav-arrow {
+  color: #d9edff;
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.hub-nav-card-stats {
+  flex-wrap: wrap;
+}
+
+.hub-stat-chip {
+  min-width: 96px;
+  padding: 0.7rem 0.85rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(121, 181, 255, 0.12);
+}
+
+.hub-stat-chip span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.72rem;
+  margin-bottom: 0.2rem;
+}
+
+.hub-stat-chip strong {
+  color: #edf8ff;
+}
+
+.hub-ship-preview {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 112px;
+}
+
+.hub-ship-preview .ship-preview-svg {
+  width: 120px;
+  height: 120px;
+}
+
+.hub-card-meter-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.hub-card-meter {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.hub-card-meter-head {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.hub-card-meter-head strong {
+  color: #dff1ff;
+  font-size: 0.76rem;
+}
+
+.hub-card-meter-shell {
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.hub-card-meter-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--branch-color, #79b5ff), rgba(255, 255, 255, 0.9));
+}
+
+.hub-summary-grid {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.hub-page .card-list,
+.hub-page .achievement-list,
+.hub-page .contract-board {
+  margin-top: 0;
+}
+
+#classList,
+#zoneList,
+#archiveList,
+#achievementList {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
 .talent-panel {
   width: min(1580px, 100%);
 }
@@ -1553,6 +1726,13 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 
+  .hub-nav-card.featured {
+    grid-column: span 1;
+  }
+
+  .hub-page-head,
+  .hub-page-head-main,
+  .hub-overview-head,
   .section-head,
   .panel-header {
     flex-direction: column;
@@ -1600,6 +1780,20 @@ button:disabled {
 
   .button-row button {
     flex: 1 1 180px;
+  }
+
+  .hub-overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hub-nav-card {
+    min-height: 0;
+  }
+
+  .hub-page-head .toolbar,
+  .hub-page-head button,
+  .hub-page-head .button-link {
+    width: 100%;
   }
 
   .status-card,

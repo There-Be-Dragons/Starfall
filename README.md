@@ -18,7 +18,7 @@ It is built with plain `HTML`, `CSS`, and `JavaScript` and runs directly in the 
 
 ## Running the Game
 
-Open `index.html` in a browser, or double-click `Play-Starfall.bat`.
+Open `index.html` in a browser.
 
 ## Controls
 
